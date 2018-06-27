@@ -1,0 +1,1603 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>M'Levy GDAX View</title>
+	<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet"> 
+	<style>
+		* { box-sizing: border-box; }
+		html, body { height: 100%; margin: 0; padding:0; }
+		body { font-family: 'Roboto'; font-size: 14px; }
+		option { font-size: 10px; }
+		table, th, td { border: 0px solid gray; border-color: #0ee51d; padding: 1px; font-size: 10px; }
+		table { border-collapse: collapse; }
+		td { text-align: right; padding-right: 3px }
+		th { text-align: center; background-color: #f9f9f9; font-weight: normal; }
+		.tradingDashboardContainer { border-radius: 4px; background-color: #f9f9f9; padding: 7px; font-size: 11px; }
+		label { padding: 3px 3px 3px 0; display: inline-block; font-size:11px }
+		input[type=text] { width:50px; padding:1px 2px 1px 2px; border:1px solid #ccc; border-radius:2px; box-sizing:border-box; resize:vertical; font-size:11px}
+		input.positive { background-color:SeaGreen; }
+		input.negative { background-color:LightCoral; }
+		input.neutral { background-color:none; }
+		input[type=button] { font-size: 11px; }
+		input[type=submit] { background-color:#4CAF50; color:white; padding:3px 10px; margin-top:6px; border:none; border-radius:2px; cursor:pointer; float:right; }
+		input[type=submit]:hover { background-color: #45a049; }
+		.col-tradingHistoryTable { float:left; margin:0px; }
+		.col-tradingHistorySVG { float:left; margin:0px; border:0px }
+		.col-orderBookSVG { float:left; margin:0px; border:0px }
+		.col-trades { float:left; margin:0px; }
+		.col-01 { float:left; margin-top:2px; width:90px; } /*width:35%;*/
+		.col-03 { float:left; margin-top:2px; } /*width:65%; */
+		.row:after { content:""; display:table; clear:both; }
+		
+		/* ORDER BOOK */
+		.ob_bids { color: SeaGreen; }
+		.ob_asks { color: LightCoral; }
+		.ob_size { width:60px; background-color:#f9f9f9 }
+		
+		/* SVG */
+		.tradingInfoText { font-family: Verdana; font-size:10px; }
+		.axis { stroke:#c4b7a6; stroke-width:2;shape-rendering:crispEdges; }
+		.prodWatermark {font-family: Verdana; font-size:60px; opacity:0.05; text-anchor:middle; shape-rendering:crispEdges; }
+		.yTickPctText { font-family: Verdana; font-size:8px; text-anchor:end; }
+		.yTickPriceText {font-family: Verdana; font-size:8px; text-anchor:end; }
+		.yTickLabelBcg { stroke:green;stroke-width:1;fill-opacity:0.9;stroke-opacity:0.9;shape-rendering:crispEdges; }
+		.yTickLine { stroke-width:1;shape-rendering:crispEdges; }		
+		.volCandle { stroke:none; stroke-width:1; opacity:0.5; shape-rendering:crispEdges; }
+		.candleXTickText { font-family:Verdana; font-size:8px; text-anchor:middle; fill:black; stroke:none; }
+		.candleXTickLine { stroke:gray;stroke-width:1; shape-rendering:crispEdges; }
+		.candleSegment { stroke-width:1; shape-rendering:crispEdges; } 
+		.candleBcg { opacity:0.1; stroke:gray; stroke-width:1; shape-rendering:crispEdges;}
+		.cndlInfoBcg { fill:white; stroke-width:0; fill-opacity:0.7; shape-rendering:crispEdges; }
+		.cndlInfoText {font-family: Verdana; font-size:10px; } 
+		.yHighLightLine { stroke:orange; stroke-width:1; shape-rendering:crispEdges; }
+		
+		/* CV */
+		.nav { z-index:999; background-color:#CCC; position:fixed; top:1px; left:0px; border:2px solid #ccc; border-radius:3px; }
+		.cv { z-index:1000; background-color:#CCC; position:fixed; top:1px; left:67px; width:40%; max-height:80%; border:2px solid #ccc; border-radius:3px; font-size: 13px; overflow-y: auto;}		
+		.cv .title {width:100%; margin-top:2px; text-align:center; background-color:#f9f9f9; font-weight:bold; clear:left;}
+		.cv .footer {width:100%; text-align:center; background-color:#f9f9f9; font-weight:bold; clear:left;}
+		a:link { color: SeaGreen; }
+		a:visited  { color: SeaGreen; }
+		a:hover { color: green; }
+		a:active { color: SeaGreen; }
+		
+/* The MODAL */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    padding-top: 100px; /* Location of the box */
+    left: 0; top: 0; width: 100%; height: 100%; 
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content */
+.modal-content {
+    position: relative;
+    background-color: #fefefe;
+    margin: auto;
+    padding: 0;
+    border: 1px solid #888;
+    width: 50%;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+    -webkit-animation-name: animatetop;
+    -webkit-animation-duration: 0.4s;
+    animation-name: animatetop;
+    animation-duration: 0.4s
+}
+/* Add Animation */
+@-webkit-keyframes animatetop { from {top:-300px; opacity:0} to {top:0; opacity:1} }
+@keyframes animatetop { from {top:-300px; opacity:0 } to {top:0; opacity:1 } }
+.close { color: white; float: right; font-size: 18px; font-weight: bold; }
+.close:hover, .close:focus { color: #000; text-decoration: none; cursor: pointer; }
+.modal-header { padding: 2px 10px 8px; background-color: SeaGreen; color: white; }
+.modal-body { padding: 2px 10px; font-size:12px }
+.modal-footer { padding: 2px 10px; background-color: SeaGreen; color: white; }				
+	</style>	
+	<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+	<script src="https://d3js.org/d3.v4.min.js"></script>
+	<script language="javascript" type="text/javascript">
+	
+	//----------- CONFIGURATION -----------------------------------------------------
+    var wsUri = "wss://ws-feed.gdax.com/";
+    var selectedProductIDs = ["ETH-BTC", "BTC-EUR"];	
+	var activeTradesJSON = JSON.stringify( 
+		{
+			"trades": {
+				"ETH-BTC": [				
+					{ "entryVolume": 558, "entryPX": 0.08212 },
+					{ "entryVolume": 100, "entryPX": 0.0699 }
+					
+				],
+				"BTC-EUR": [ 
+					{ "entryVolume": 10, "entryPX": 6920 },
+					{ "entryVolume": 20, "entryPX": 7120 }
+				],
+			}
+		} );
+	
+	var tradeHistoryDataMax = 200;
+	var tradeHistoryTableWidth = 150;
+	var HIGHT_MAIN_CHART = 300; 
+	var HIGHT_MAIN_CHART_X_AXIS_SPACE = 23;
+	var HIGHT_RSI_CHART = 60;
+	var HIGHT_CHART_FOOTER_SPACE = 30;
+	var xWidth = 900;
+	var ORDERBOOK_ZOOM_SCALE = [0.0005, 0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 0.8, 0.95, 0.99, 1];
+	var orderBookZoomSelection = 3;	
+	var orderBookXWidth = 300;
+	var granulOpts = {'-1':['No Candles', ''], 60:['1 minute', ''], 300:['5 minutes', ''], 900:['15 minutes', 'selected'], 3600:['1 hour', ''], 21600:['6 hours', ''], 86400:['1 day', '']};
+	var candleCounterOpts = {10:['10 candles', ''], 20:['20 candles', ''], 60:['60 candles', ''], 100:['100 candles', ''], 150:['150 candles', 'selected'], 200:['200 candles', ''], 250:['250 candles', ''], '-1':['all candles', '']};
+	var candleUpdtSecFrequency = 60;
+	var xTicksCount = 6;
+	var analysis = ["ema1", "ema2", "emacross", "rsi"]; // ANALYSIS LINES
+
+	//END CONFIGURATION -------------------------------------------------
+	var websocket = null;
+	var availableProducts = null;
+	var activeTrades = JSON.parse(activeTradesJSON);
+	var tradeHistoryData = {};
+	var candleData = [];
+	var orderBook = [];
+	var updateOrderBookCount = [];
+	var reconnectCount = 0;
+	var openingTime = new Date();
+  
+  function init() {	
+	
+	tradeHistoryData = {};
+	candleData = [];
+	orderBook = [];
+	updateOrderBookCount = [];
+	reconnectCount = 0;
+	openingTime = new Date();	
+	if(websocket != null) {
+		websocket.onclose = function () {}; // disable onclose handler first
+		websocket.close();
+	}
+	$('#productSections').empty();	
+	refreshProductsDropDowns();	
+	if (selectedProductIDs.length == 0) return;		
+	
+	for (var pi = 0; pi < selectedProductIDs.length; pi++) {			
+		var pr_id = selectedProductIDs[pi];
+		
+		var dc = availableProductsGet(pr_id, "dc"); 
+		
+		var tableHight = HIGHT_MAIN_CHART+HIGHT_MAIN_CHART_X_AXIS_SPACE+HIGHT_RSI_CHART+HIGHT_CHART_FOOTER_SPACE;
+		$('#productSections').append(
+			$('<div/>', { class: 'row', id: 'section'+pr_id } ).append(
+				$('<div/>', { class: 'col-tradingHistorySVG' } ).append(
+					$('<section/>', { id: 'sectionForTradeHistorySVG'+pr_id, style: 'border:1px solid gray; float: left;' } ) ),
+				$('<div/>', { class: 'col-orderBookSVG' } ).append(
+					$('<section/>', { id: 'sectionForOrderBookSVG'+pr_id, style: 'border:1px solid gray; float: left;' } ) ),					
+				$('<div/>', { class: 'col-tradingHistoryTable' } ).append(
+					$('<section/>', { id: 'sectionForTradeHistoryTable'+pr_id, style: 'float: left; height: '+tableHight+'px; overflow-y: scroll;' } ).append(
+						$('<table/>', { id: 'tradeHistoryTable'+pr_id, style: 'width: '+tradeHistoryTableWidth+'px;' } ).append(
+							$('<tr><th>Time</th><th>Size</th><th>Price</th><th>Side</th></tr>')))),
+				$('<div/>', { class: 'col-trades' } ).append(
+					$('<section/>', { id: 'trades'+pr_id, style: 'border:1px solid gray; float: left;' } ) )
+				
+				//////////////////////////////
+				//////////////////////////////
+				//,$('<div/>', { class: 'col-trades' } ).append(
+				//	$('<textarea/>', { id: 'crossEMA'+pr_id, style: 'border:1px solid gray; float: left;' } ) )	
+				//////////////////////////////
+				//////////////////////////////
+				
+				)
+			);
+		createWaitingForTradeSpinner(pr_id);
+		
+		for (var trade in activeTrades.trades[pr_id]) {
+			$('#trades'+pr_id).append(
+				$('<div/>', { class: 'tradingDashboardContainer' }).append(
+					$('<span/>').text('Trade: ' + pr_id + ' ID: ' + trade),
+					$('<form/>', { id: 'tradeForm'+pr_id+trade, action: 'return false;' } ).append(
+						$('<div/>', { class: 'row' } ).append(
+							$('<div/>', { class: 'col-01' } ).append(
+								$('<label>Entry Vol</label>' ),
+								$('<input/>', { type: 'checkbox', id: 'showVolume'+pr_id+trade, title: 'Show/Hide on OrderBook' } ).prop('checked', true)						
+							),
+							$('<div/>', { class: 'col-03' } ).append(
+								$('<input/>', {
+									id: 'entryVolume'+pr_id+trade, type: 'text', placeholder: 'Entry Volume',
+									value: activeTrades.trades[pr_id][trade].entryVolume, product: pr_id }
+								).on('input', function() { recalculateTradingDashboard($(this).attr('product')); })
+							)
+						),
+						$('<div/>', { class: 'row' } ).append(
+							$('<div/>', { class: 'col-01' } ).append(
+								$('<label>Entry PX</label>' ),
+								$('<input/>', { type: 'checkbox', id: 'showTrade'+pr_id+trade, title: 'Show/Hide on Chart', value: pr_id } ).on('change', function() { renderChart($(this).attr('value')); })
+								),
+							$('<div/>', { class: 'col-03' } ).append(
+								$('<input/>', {
+									id: 'entryPX'+pr_id+trade, type: 'text', placeholder: 'Entry PX',
+									value: parseFloat(activeTrades.trades[pr_id][trade].entryPX).toFixed(dc) }
+								)
+							)
+						),
+						$('<div/>', { class: 'row' } ).append(
+							$('<div/>', { class: 'col-01' } ).append($('<label>Market PX</label>' )),
+							$('<div/>', { class: 'col-03' } ).append(
+								$('<input/>', {
+									id: 'marketPX'+pr_id+trade, type: 'text', placeholder: 'Market PX', product: pr_id }
+								).prop('disabled', true)
+							)
+						),
+						$('<div/>', { class: 'row' } ).append(
+							$('<div/>', { class: 'col-01' } ).append($('<label>Current GL%</label>' )),
+							$('<div/>', { class: 'col-03' } ).append(
+								$('<input/>', {
+									id: 'currentGLPct'+pr_id+trade, type: 'text', placeholder: 'Current GL%'}
+								)
+							)
+						),
+						$('<div/>', { class: 'row' } ).append(
+							$('<div/>', { class: 'col-01' } ).append($('<label>Current GL</label>' )),
+							$('<div/>', { class: 'col-03' } ).append(
+								$('<input/>', {
+									id: 'currentGL'+pr_id+trade, type: 'text', placeholder: 'Current GL'}
+								)
+							)
+						),
+						$('<div/>', { class: 'row' } ).append(
+							$('<input/>', { type: 'button', id: 'submit'+pr_id+trade, value: 'Place Sell Order', title:'Trading Disabled'} ).on('click', function() { alert('Trading Disabled') })
+						)
+					)
+				)
+			);
+		}			
+		renderChart(pr_id);
+	}
+	getCandlesFromExchange();
+    initWebSocket();
+	
+	$('#granularity').on('change', function() {
+		getCandlesFromExchange();
+	});	
+	$('#candleCounter').on('change', function() {
+		for (var pi = 0; pi < selectedProductIDs.length; pi++) {			
+			var pr_id = selectedProductIDs[pi];		
+			renderChart(pr_id);
+		}		
+	});		
+	var timerID = setInterval(function() {
+		getCandlesFromExchange();
+		writeToConsole("UPDATED CANDLES: freq: " + candleUpdtSecFrequency + "sec.");
+	}, candleUpdtSecFrequency * 1000); //clearInterval(timerID); // The setInterval it cleared and doesn't run anymore.	
+  }
+
+  function initWebSocket() {
+    websocket = new WebSocket(wsUri);
+    websocket.onopen = function(evt) { onOpen(evt) };
+    websocket.onclose = function(evt) { onClose(evt) };
+    websocket.onmessage = function(evt) { onMessage(evt) };
+    websocket.onerror = function(evt) { onError(evt) };
+  }
+
+  function onOpen(evt) {
+    writeToConsole("WEB SOCKET - OPEN and CONNECTED");
+	var json = JSON.stringify(
+		{
+			"type": "subscribe",
+			"product_ids": JSON.parse(JSON.stringify(selectedProductIDs)),
+			"channels": [
+				"level2",
+				//"heartbeat",
+				{ "name": "ticker", "product_ids": JSON.parse(JSON.stringify(selectedProductIDs)) }
+			]
+		}	
+	);
+	doSend(json); 	
+  }
+
+  function onClose(evt) {
+    writeToConsole("WEB SOCKET - DISCONNECTED");	
+	// try to re-connect 
+    initWebSocket();
+	reconnectCount++;
+	writeToConsole("WEB SOCKET - RECONNECTING: " + reconnectCount + " count"); //websocket.readyState;
+  }
+
+  function onMessage(evt) {		
+	//console.log(evt.data);	
+	var msgJSON = JSON.parse(evt.data);	
+	var pr_id = msgJSON.product_id;
+	var type = msgJSON.type;
+	
+	if (selectedProductIDs.indexOf(pr_id)<0) return; //TODO: UNSUBSCRIBE NEEDED
+	
+	if (type === "ticker") {
+		
+		if (!msgJSON.hasOwnProperty('time')) return;
+				
+		var newTradingData = { 
+			'time': msgJSON.time, //2018-01-18T14:12:43.614000Z -> substring(11, 19) gives TIME			
+			'price': msgJSON.price,
+			'size': msgJSON.last_size,
+			'side': msgJSON.side
+		};
+		
+		var dc = availableProductsGet(msgJSON.product_id, "dc");
+		document.title = msgJSON.product_id + ' ' + parseFloat( Number(msgJSON.price) ).toFixed(dc);
+		
+		if (!tradeHistoryData.hasOwnProperty(pr_id)) tradeHistoryData[pr_id] = [];	
+		tradeHistoryData[pr_id].unshift(newTradingData); //INSERT AS THE FIRST ENTRY
+		if (tradeHistoryData[pr_id].length >= tradeHistoryDataMax+1) tradeHistoryData[pr_id].pop(); //REMOVE THE LAST ENTRY
+		updateTradeHistoryTable(pr_id);		
+		
+		//UPDATING THE LAST CANDLE
+		if (candleData.hasOwnProperty(pr_id)) {
+			if (candleData[pr_id].length > 0){
+				var newPrice = Number(newTradingData.price);				
+				var candToUpdate = candleData[pr_id][0]; 
+				var low = Number(candToUpdate[1]);
+				var high = Number(candToUpdate[2]);
+				low = (low>newPrice) ? newPrice : low;
+				high = (high<newPrice) ? newPrice : high;
+				candleData[pr_id][0][1] = low;
+				candleData[pr_id][0][2] = high;
+				candleData[pr_id][0][4] = newPrice;
+				candleData[pr_id][0][5] = (Number(candToUpdate[5]) + Number(newTradingData.size));
+			}
+		}		
+		renderChart(pr_id);
+		//recalculateTradingDashboard(pr_id);
+		
+	} else if (type === "snapshot") {		
+		
+		//SNAPSHOT NEEDS TO BE REFRESHED TO AVOID MISSED TRADES
+		orderBook[pr_id] = [];
+		updateOrderBookCount[pr_id] = 0;
+		orderBook[pr_id]["bids"] = msgJSON.bids;
+		orderBook[pr_id]["asks"] = msgJSON.asks;
+				
+		renderOrderBook(pr_id);
+		
+	} else if (type === "l2update") {
+	
+		updateOrderBook(pr_id, msgJSON.changes);
+		
+	} else {
+		writeToConsole(evt.data);
+	}
+  }
+
+  function onError(evt) {
+    writeToConsole('<span style="color: red;">WEB SOCKET - ERROR:</span> ' + evt.data);
+  }
+
+  function doSend(message) {
+    writeToConsole("WEB SOCKET - SENT: " + message);
+    websocket.send(message);
+  }
+
+  function writeToConsole(message) {
+	$('#console').prepend($('<p/>', {style: 'margin: 0; padding: 0; font-size: 11px; word-wrap: break-word' }).append($('<span/>').text(getNow() + message)));
+  }
+
+function refreshProductsDropDowns() {
+	
+	$('#availableProducts').empty();
+	$('#selectedProducts').empty();
+	for (var i = 0; i < availableProducts.length; i++) {		
+		var pid = availableProducts[i].id;
+		if (selectedProductIDs.indexOf(pid) < 0) $('#availableProducts').append( $('<option/>', {value: pid}).text( pid ) ); 
+		else $('#selectedProducts').append( $('<option/>', {value: pid}).text( pid ) ); 		
+	}  
+}
+  
+function updateOrderBook(pr_id, changes) {   
+	
+	//console.log("updateOrderBook " + pr_id + " " + changes.toString());
+	
+	updateOrderBookCount[pr_id]++;		
+	
+	for (i=0; i < changes.length; i++) {
+		var changeSide = (changes[i][0] == "buy") ? "bids" : "asks";;
+		var changePX = Number(changes[i][1]); 
+		var changeSize = Number(changes[i][2]);
+		
+		var orders = orderBook[pr_id][changeSide];
+		
+		var index = -1;
+		var entryType = "none";				
+		
+		for (var j = 0; j < orders.length; j++) {
+
+			var px = Number(orders[j][0]);			
+			index = j;
+
+			if (changePX == px && changeSize == 0) {
+				entryType = "delete";
+				break;
+			}				
+			
+			if (changePX == px) {
+				entryType = "update";
+				break;
+			}			
+			if ( (changeSide == "asks" && changePX < px) || (changeSide == "bids" && changePX > px) ) {
+				entryType = "new";				
+				break;
+			} 		
+		}
+		
+		var entry = [changePX, changeSize, entryType ];
+		if (entryType == "delete") {
+			orders.splice(index, 1); //DELETE ENTRY	
+			
+		} else if (entryType == "update") {
+			orders.splice(index, 1, entry);
+			
+		} else if (entryType == "new") {				
+			orders.splice(index, 0, entry);
+		}			
+	}
+	renderOrderBook(pr_id);
+}
+  
+function renderOrderBook(pr_id) {	
+
+	var svgHight = HIGHT_MAIN_CHART+HIGHT_MAIN_CHART_X_AXIS_SPACE+HIGHT_RSI_CHART+HIGHT_CHART_FOOTER_SPACE;	
+	
+	$("#sectionForOrderBookSVG"+pr_id).empty();
+	var orderBookSVG = d3.select('#sectionForOrderBookSVG'+pr_id).append('svg').attr('id', 'orderBookSVG'+pr_id).attr('width', orderBookXWidth).attr('height', svgHight).attr('class', 'orderBookSVG');
+	
+	var defs = orderBookSVG.append('defs');
+	var txtBackGrdFilter = defs.append('filter').attr('x', 0).attr('y', 0).attr('width', 1).attr('height', 1).attr('id', 'txtBackGrd');
+	txtBackGrdFilter.append('feFlood').attr('flood-color', '#f9f9f9');
+	txtBackGrdFilter.append('feComposite').attr('in', 'SourceGraphic');
+
+	var pxBackGrdFilter = defs.append('filter').attr('x', 0).attr('y', 0).attr('width', 1).attr('height', 1).attr('id', 'pxBackGrd');
+	pxBackGrdFilter.append('feFlood').attr('flood-color', '#ffb732');
+	pxBackGrdFilter.append('feComposite').attr('in', 'SourceGraphic');	
+		
+	/*
+	var html = '<tr style="background-color:none;"><td><span style="color: ' + sideColor +';">' + newTradingData.time.substring(11, 19) + '</span></td><td><span style="color: ' + sideColor +';">' + parseFloat(newTradingData.size).toFixed(4) + '</span></td><td><span style="color: ' + sideColor +';">' + parseFloat(newTradingData.price).toFixed(dc) + '</span></td><td><span style="color: ' + sideColor +';">' + newTradingData.side + '</span></td></tr>'
+	$('#tradeHistoryTable' + pr_id + ' tr').eq(0).after(html);
+	//$('#tradeHistoryTable' + pr_id + ' tr').eq(1).hide().fadeIn(500);
+	var sideColorBg = (newTradingData.side == "buy") ? "#7be382": "#ff9696";
+	$('#tradeHistoryTable' + pr_id + ' tr:eq(1)').effect("highlight", {color: sideColorBg}, 600);	
+	*/	
+	
+	var bids = orderBook[pr_id]["bids"]; 
+	var asks = orderBook[pr_id]["asks"];	
+	var dc = availableProductsGet(pr_id, "dc");
+	var rows = '';
+	for (var i = 0; i < 12; i++) {
+		rows += '<tr><td class="ob_bids">' + parseFloat(bids[i][0]).toFixed(dc) + '</td><td class="ob_size">' + parseFloat(bids[i][1]).toFixed(5) + '</td><td></td>';
+		rows += '    <td class="ob_size">' + parseFloat(asks[i][1]).toFixed(5) + '</td><td class="ob_asks">' + parseFloat(asks[i][0]).toFixed(dc) + '</td></tr>';
+	}	
+	var obTable = '<table>'
+	 + '<tr><th>BIDS</th><th>VOLUME</th><th style="width:125px;"> </th><th>VOLUME</th><th>ASKS</th></tr>'
+	 + rows
+	 + '</table>';
+	orderBookSVG.append('foreignObject').attr('x', 5).attr('y', 5).attr('width', orderBookXWidth-10).attr('height', svgHight-10).attr('fill', 'lightgray').append("xhtml:body").html(obTable);	
+	
+	orderBookSVG.append('text').attr('x', orderBookXWidth/2).attr('y', 16).attr('style', 'text-anchor:middle;font-size:11px').text("ORDER BOOK");	
+	orderBookSVG.append('text').attr('id', 'obUpdateText'+pr_id).attr('x', orderBookXWidth/2).attr('y', 30).attr('style', 'text-anchor:middle;font-size:10px').text(updateOrderBookCount[pr_id].toLocaleString() + " updates");
+	var speedPerSec = parseFloat( updateOrderBookCount[pr_id]/((new Date() - openingTime)/1000) ).toFixed(0);
+	orderBookSVG.append('text').attr('id', 'obUpdateText'+pr_id).attr('x', orderBookXWidth/2).attr('y', 43).attr('style', 'text-anchor:middle;font-size:10px').text(speedPerSec + " updts/sec");
+	
+	// GRAPH
+	var obArea = orderBookSVG.append('g').attr('transform', 'translate(5, 211)');
+	var obGraphWidth = 290;
+	var obGraphHeight = 200;
+	obArea.append('rect').attr('x', 0).attr('y', 0).attr('width', obGraphWidth).attr('height', obGraphHeight).attr('style', 'fill:#f9f9f9; opacity:0.7');
+	
+	//MID MARKET PX
+	obArea.append('line').attr('x1', (obGraphWidth/2)).attr('y1', 0).attr('x2', (obGraphWidth/2)).attr('y2', obGraphHeight).attr('style', 'stroke:gray;stroke-width:1; shape-rendering:crispEdges;');
+	var midMarketPX = (Number(asks[0][0]) + Number(bids[0][0]))/2;
+	obArea.append('text').attr('id', 'midMarketPX'+pr_id).attr('x', (obGraphWidth/2)).attr('y', 10).attr('style', 'text-anchor:middle; fill:black; stroke:none; font-size:10px;').attr('filter', 'url(#pxBackGrd)').text(parseFloat(midMarketPX).toFixed(dc+1));	
+
+	var selectedLastOBPx = 	(1-ORDERBOOK_ZOOM_SCALE[orderBookZoomSelection])*midMarketPX;
+	
+	var allVolume = 0;
+	var lastOBPx = 0;
+	for (var i=0; i < bids.length; i++) {
+		if (bids[i][0] < selectedLastOBPx) break;
+		allVolume += Number(bids[i][1]);
+		lastOBPx = Number(bids[i][0]);
+	}
+	var pxRange = midMarketPX - lastOBPx;
+	var yScale = obGraphHeight/allVolume;
+	var xScale = (obGraphWidth/2)/pxRange;
+	
+	var entryVols = [];
+	var i=0;
+	for (var tradeID in activeTrades.trades[pr_id]) {
+		if ($('#showVolume'+pr_id+tradeID).is(":checked")) {
+			entryVols[i] = [Number($('#entryVolume'+pr_id+tradeID).val()), 0, tradeID]; // "0" ensures the entry is shown only once
+			i++;
+		}
+	}
+
+	for (var side in orderBook[pr_id]) {
+	
+		var sideOrderBook = orderBook[pr_id][side];
+		var color = (side=="bids")?'green':'red';
+		
+		var cumVolume = 0;	
+		var x = obGraphWidth/2;
+		var y = allVolume * yScale;
+		var points = x + ',' + y + ' ';
+		var lastX = x;
+		var lastY = y;
+		var lastPX = 0;
+		for (var i = 0; i < sideOrderBook.length; i++) {
+			
+			lastPX = Number(sideOrderBook[i][0]);
+			var x = (obGraphWidth/2) - (midMarketPX - lastPX) * xScale;		
+			if (side == "bids" && x<0) {
+				points += 0 + ',' + lastY + ' ';
+				break;
+			}
+			if (side == "asks" && x>obGraphWidth) {
+				points += obGraphWidth + ',' + lastY + ' ';
+				break;
+			}
+			points += x + ',' + lastY + ' ';
+			lastX=x;
+			
+			cumVolume += Number(sideOrderBook[i][1]);
+			if (side=="asks") {
+				for (var t in entryVols) {
+					var eVol = Number(entryVols[t][0]);
+					if (cumVolume >= eVol && entryVols[t][1]==0) {
+					
+						var cy = (allVolume - eVol) * yScale;
+						if (cy<0) continue;
+						
+						obArea.append('circle').attr('id', 'tradeCircle'+pr_id+side+t).attr('cx', lastX).attr('cy', cy).attr('r', 4).attr('style', 'fill:brown; stroke:#421F00;');
+						obArea.append('line').attr('x1', (obGraphWidth/2)).attr('y1', cy).attr('x2', lastX).attr('y2', cy).attr('style', 'stroke:brown;stroke-width:1; shape-rendering:crispEdges;stroke-dasharray:2,2');
+						
+						var pxDiff = (midMarketPX-lastPX)/lastPX;
+						if (Math.abs(pxDiff) > 0.002) { // SHOW ONLY WHEN PX DIFF IS ABOVE THE TRESHOLD (0.001)
+							obArea.append('text').attr('x', (obGraphWidth/2)).attr('y', cy-4).attr('style', 'text-anchor:middle; fill:black; stroke:none; font-size:10px;').attr('filter', 'url(#pxBackGrd)').text("PX Diff: " + parseFloat(pxDiff).toFixed(3) + ' %');							
+						}
+						$('#marketPX'+pr_id+entryVols[t][2]).val(parseFloat(lastPX).toFixed(dc));
+						recalculateTradingDashboard(pr_id);						
+						entryVols[t][1] = 1; // SETTING TO "1" TO NOT REDRAW IT AGAIN
+					}
+				}				
+			}
+			var y = (allVolume - cumVolume) * yScale;	
+			if (y<0){
+				points += lastX + ',' + 0 + ' ';
+				break;
+			}			
+			
+			points += lastX + ',' + y + ' ';
+			lastY=y;
+		}
+		
+		if (side == "bids") {
+			var yTs = [0.17, 0.33, 0.5, 0.67, 0.84];
+			for (var yT in yTs) {
+				var y = yTs[yT]*obGraphHeight;
+				var cVol = parseFloat(allVolume - y/yScale).toFixed(1);	
+				obArea.append('line').attr('x1', 0).attr('y1', y).attr('x2', obGraphWidth).attr('y2', y).attr('style', 'stroke:gray;stroke-width:1; shape-rendering:crispEdges;stroke-dasharray:5,5');		
+				obArea.append('text').attr('x', obGraphWidth/2).attr('y', y).attr('style', 'text-anchor:middle; fill:black; stroke:none; font-size:10px;').attr('filter', 'url(#txtBackGrd)').text(cVol);			
+			}
+			var xTs = [0.1, 0.3, 0.7, 0.9];
+			for (var xT in xTs) {
+				
+				var x= xTs[xT]*obGraphWidth;				
+				var cPx = parseFloat(lastOBPx + x/xScale).toFixed(dc);					
+				obArea.append('line').attr('x1', x).attr('y1', 0).attr('x2', x).attr('y2', obGraphHeight).attr('style', 'stroke:gray;stroke-width:1; shape-rendering:crispEdges;stroke-dasharray:5,5');		
+				obArea.append('text').attr('x', x).attr('y', 0).attr('style', 'text-anchor:middle; fill:black; stroke:none; font-size:10px;').attr('filter', 'url(#pxBackGrd)').text(cPx);			
+			}					
+		}		
+		obArea.append('polyline').attr('style', 'fill:none; stroke:'+color+'; stroke-width:1; ').attr('points', points);
+		points += (side == "bids") ? '0,0 0,'+obGraphHeight : obGraphWidth+',0 '+obGraphWidth+','+obGraphHeight;
+		obArea.append('polyline').attr('style', 'fill:'+color+'; stroke:none; stroke-width:1; opacity:0.4;').attr('points', points);
+		
+		var tx = (side=="bids")? 2 : obGraphWidth-2;
+		obArea.append('text').attr('id', 'obLastLabel'+pr_id+side).attr('x', tx).attr('y', obGraphHeight-23).attr('style', 'text-anchor:'+((side=="bids")?'start':'end')+'; fill:black; stroke:none; font-size:10px;').attr('filter', 'url(#txtBackGrd)').append('tspan').attr('x', tx).attr('y', obGraphHeight-23).text('Max:').append('tspan').attr('x', tx).attr('y', obGraphHeight-14).text('PX: '+parseFloat(lastPX).toFixed(dc)).append('tspan').attr('x', tx).attr('y', obGraphHeight-4).text('V: '+parseFloat(cumVolume.toFixed(1)));		
+	}
+}  
+  
+function updateTradeHistoryTable(pr_id) {
+	
+	var newTradingData = tradeHistoryData[pr_id][0];
+	
+	//REMOVE CONNECTING SPINNER AFTER CONNECTION ESTABLISHED
+	$( '#WaitingForTradeSpinner'+pr_id ).remove();
+
+	var sideColor = (newTradingData.side == "buy") ? "green": "red";	
+	var dc = availableProductsGet(pr_id, "dc");
+	var tradeHistoryTable = document.getElementById("tradeHistoryTable" + pr_id);
+	
+	//remove old rows - scrollbar added
+	if (tradeHistoryTable.rows.length == 50) tradeHistoryTable.deleteRow(49);
+	//var row = tradeHistoryTable.insertRow(1);
+	//row.insertCell(0).innerHTML = '<span style="color: ' + sideColor +';">' + newTradingData.time.substring(11, 19) + '</span>'; 
+	//row.insertCell(1).innerHTML = '<span style="color: ' + sideColor +';">' + parseFloat(newTradingData.size).toFixed(4) + '</span>';
+	//row.insertCell(2).innerHTML = '<span style="color: ' + sideColor +';">' + parseFloat(newTradingData.price).toFixed(dc) + '</span>';
+	//row.insertCell(3).innerHTML = '<span style="color: ' + sideColor +';">' + newTradingData.side + '</span>';	
+	var html = '<tr style="background-color:none;"><td><span style="color: ' + sideColor +';">' + newTradingData.time.substring(11, 19) + '</span></td><td><span style="color: ' + sideColor +';">' + parseFloat(newTradingData.size).toFixed(4) + '</span></td><td><span style="color: ' + sideColor +';">' + parseFloat(newTradingData.price).toFixed(dc) + '</span></td><td><span style="color: ' + sideColor +';">' + newTradingData.side + '</span></td></tr>'
+	$('#tradeHistoryTable' + pr_id + ' tr').eq(0).after(html);
+	//$('#tradeHistoryTable' + pr_id + ' tr').eq(1).hide().fadeIn(500);
+	var sideColorBg = (newTradingData.side == "buy") ? "#7be382": "#ff9696";
+	$('#tradeHistoryTable' + pr_id + ' tr:eq(1)').effect("highlight", {color: sideColorBg}, 600);	
+}  
+  
+function getNow() {
+    var date = new Date();	
+    var month = date.getMonth() + 1;
+    var day = date.getDate();
+    var hour = date.getHours();
+    var min = date.getMinutes();
+    var sec = date.getSeconds();
+
+    month = (month < 10 ? "0" : "") + month;
+    day = (day < 10 ? "0" : "") + day;
+    hour = (hour < 10 ? "0" : "") + hour;
+    min = (min < 10 ? "0" : "") + min;
+    sec = (sec < 10 ? "0" : "") + sec;
+
+    var str = date.getFullYear() + "-" + month + "-" + day + " " +  hour + ":" + min + ":" + sec + ": ";
+    return str;
+}
+
+function recalculateTradingDashboard(pr_id) {	
+		
+	for (var trade in activeTrades.trades[pr_id]) {
+			
+		var price = $('#marketPX'+pr_id+trade).val();
+		if (isNaN(price)) continue;
+	
+		var dc = availableProductsGet(pr_id, "dc"); 	
+		var entryVolume = $('#entryVolume'+pr_id+trade).val();
+		var entryPX = $('#entryPX'+pr_id+trade).val();				
+		
+		var currentGLPct = ((price - entryPX)/entryPX);
+		$('#currentGLPct'+pr_id+trade).val(parseFloat(currentGLPct * 100).toFixed(2) + ' %');		
+			if (currentGLPct < 0) {
+				$('#currentGLPct'+pr_id+trade).addClass("negative");
+			} else if (currentGLPct > 0) {
+				$('#currentGLPct'+pr_id+trade).addClass("positive");
+			} else {
+				$('#currentGLPct'+pr_id+trade).addClass("neutral");
+			}
+		
+		var currentGL = entryVolume * currentGLPct;
+		$('#currentGL'+pr_id+trade).val(parseFloat(currentGL).toFixed(3));		
+	}
+}
+
+function renderChart(pr_id) {	
+		
+	var yHightMainChart = HIGHT_MAIN_CHART;
+	var mainChartXAxisXSpace = HIGHT_MAIN_CHART_X_AXIS_SPACE;
+	var yHightRSIChart = HIGHT_RSI_CHART;
+	var hightFooterSpace = HIGHT_CHART_FOOTER_SPACE;
+	
+	var svgHeight = yHightMainChart + mainChartXAxisXSpace + yHightRSIChart + hightFooterSpace;
+	if (!$('#rsiCB').is(":checked")) {
+		yHightMainChart = HIGHT_MAIN_CHART + HIGHT_RSI_CHART;
+	}
+	
+	// CLEAR THE SVG/CHART
+	$("#sectionForTradeHistorySVG"+pr_id).empty();
+	var svgChart = d3.select('#sectionForTradeHistorySVG'+pr_id).append('svg').attr('id', 'TradingHistorySVG'+pr_id).attr('width', xWidth+100).attr('height', svgHeight).attr('class', 'tradingHistorySVG');
+		
+	//DEFS
+	var defs = svgChart.append('defs');
+	defs.append('circle').attr('id', 'tradeHistoryDot').attr('r', 2);
+	defs.append('circle').attr('id', 'emaCrossDotBuy').attr('r', 4).attr('style', 'fill:none;stroke:green;');
+	defs.append('circle').attr('id', 'emaCrossDotSell').attr('r', 4).attr('style', 'fill:none;stroke:red;');
+	
+	//SHOW PRODUCT WATERMARK
+	svgChart.append('text').attr('x', xWidth/2+62).attr('y', '25%').attr('class', 'prodWatermark').text(pr_id);	
+
+	// CHART AREA	
+	var chartArea = svgChart.append('g').attr('transform', 'translate(45, 10)');
+	
+	var xAxis = chartArea.append('line').attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', yHightMainChart).attr('class', 'axis');
+	var yAxis = chartArea.append('line').attr('x1', 0).attr('y1', yHightMainChart).attr('x2', xWidth).attr('y2', yHightMainChart).attr('class', 'axis');
+	var yTickers = chartArea.append('g');
+
+	//CHECK IF TRADE DATA AVAILABLE AND TO SHOW
+	var tradeHistoryCount = -1;
+	var showTradeHistory = false;
+	try { 
+		tradeHistoryCount = tradeHistoryData[pr_id].length;
+		showTradeHistory = ($('#tradingHistoryCB').is(":checked")) ? true : false;
+		showTradeHistory = (tradeHistoryCount > 0) ? showTradeHistory : false;
+	} catch (err) { /*console.log(err)*/ }
+
+	//CHECK IF CANDLE DATA AVAILABLE
+	var candleCount = -1;
+	var showCandles = false;	
+	var candlesToShow = $('#candleCounter').val();	
+	try { 
+		candleCount = candleData[pr_id].length;
+		showCandles = (candleCount > 0)? true : false;
+		candlesToShow = (candlesToShow > 0) ? candlesToShow : candleCount;	
+	} catch (err) { /*console.log(err)*/ }	
+	
+	//CHART SCALING	
+	var pxMin = 1000000;
+	var pxMax = 0;
+	var volMax = 0;
+	var yTicks = [];	
+	
+	if (showTradeHistory)  {
+		for (var i = 0; i < tradeHistoryCount; i++) {
+			var t = tradeHistoryData[pr_id][i].price;
+			pxMin = (t < pxMin) ? t : pxMin;
+			pxMax = (t > pxMax) ? t : pxMax;
+		}
+	}
+	
+	for (var trade in activeTrades.trades[pr_id]) {
+		if ($('#showTrade'+pr_id+trade).is(":checked")) {
+			var entryPX = $('#entryPX'+pr_id+trade).val();
+			pxMin = (entryPX < pxMin) ? entryPX : pxMin;
+			pxMax = (entryPX > pxMax) ? entryPX : pxMax;			
+		}		
+	}
+	
+	// CANDLES SCALING		
+	if (showCandles) {			
+		for (var i = 0; i < candlesToShow; i++) {
+			var obj = candleData[pr_id][i];
+			try {
+				pxMin = (obj[1] < pxMin) ? obj[1] : pxMin;
+				pxMax = (obj[2] > pxMax) ? obj[2] : pxMax;				
+				volMax = (obj[5] > volMax) ? obj[5] : volMax;				
+			} catch(err) {
+				console.log("ERROR: " + pr_id + ' i: ' + i + ': Err: ' + err)
+			}
+		}	
+	}
+	
+	//MARGIN ON Y AXE
+	pxMin = pxMin * 0.9999;
+	pxMax = pxMax * 1.0001;
+	var yScale = yHightMainChart/(pxMax - pxMin);	
+	
+	// Y-TICKERS
+	var yTickCount = 10;
+	var ySpan = (pxMax - pxMin) / yTickCount;
+	for (i = 0; i <= yTickCount; i++) {
+		yTicks.push({price: (pxMin + (i * ySpan)), type: 'normal' });
+	} 
+	for (var trade in activeTrades.trades[pr_id]) {
+		if ($('#showTrade'+pr_id+trade).is(":checked")) {
+			var entryPX = $('#entryPX'+pr_id+trade).val();
+			yTicks.push({price: entryPX, type: 'entryPX' });
+		}
+	}
+	
+	var lastPrice = (showCandles) ? candleData[pr_id][0][4] : null;
+	lastPrice = (showTradeHistory) ? tradeHistoryData[pr_id][0].price : lastPrice;
+	if (showTradeHistory) yTicks.push({price: lastPrice, type: 'last' });
+	
+	var dc = availableProductsGet(pr_id, "dc");	
+	$.each(yTicks, function (index, value) {
+		
+		var yTPx = value.price;
+		var yTickType = value.type;		
+		var y = (pxMax - yTPx) * yScale;
+		var diffPerctg = parseFloat(((yTPx - lastPrice) / lastPrice) * 100).toFixed(2);		
+				
+		var yTickLine = yTickers.append('line').attr('x1', -4).attr('y1', y).attr('x2', xWidth).attr('y2', y).attr('class', 'yTickLine');
+		var colrLine = (yTickType == 'last' || yTickType == 'entryPX') ? 'green' : '#c4b7a6';			
+		if (yTickType == 'last') {
+			colrLine = (tradeHistoryData[pr_id][0].side == 'buy') ? 'green' : 'red';
+			yTickLine.attr('stroke', colrLine);
+		} else {			
+			yTickLine.attr('stroke', colrLine);
+		}		
+		
+		if (yTickType == 'last' || yTickType == 'entryPX') {			
+			
+			var colrBcg = (yTickType == 'last') ? 'lightblue' : 'white';	
+
+			var yTickLabelBcg = yTickers.append('rect').attr('x', -42).attr('y', y-6).attr('width', 40).attr('height', 12).attr('class', 'yTickLabelBcg').attr('fill', colrBcg);
+
+			var yTickPctLabelBcg = yTickers.append('rect').attr('x', xWidth+2).attr('width', (43)).attr('height', 12).attr('class', 'yTickLabelBcg').attr('y', y-6).attr('fill', colrBcg);
+		}
+		
+		if (showCandles || showTradeHistory ) {
+			var yTickPriceText = yTickers.append('text').attr('x', -5).attr('y', y+3).attr('class', 'yTickPriceText').text( parseFloat(yTPx).toFixed(dc) ); 
+
+			var yTickPctText = yTickers.append('text').attr('x', xWidth + 44).attr('y', y + 3).attr('class', 'yTickPctText');
+			if (yTickType == 'last') {
+				yTickPctText.text('0 %'); 
+			} else {
+				yTickPctText.text(diffPerctg + ' %'); 
+			}
+		}
+	});
+	
+	var segmentWidth = 0;
+	//CANDLES
+	if (showCandles) {			
+		segmentWidth = xWidth/candlesToShow;
+		var xCMargin = 1;
+		var candleWidth = segmentWidth - 2*xCMargin;		
+		var yPixelperVol = (yHightMainChart/3)/volMax; // starting max in 1/3 of chart area
+
+		for (var i = 0; i < candlesToShow; i++) {
+		
+			var obj = candleData[pr_id][i];
+
+			var low = obj[1];
+			var high = obj[2];
+			var open = obj[3];		
+			var close = obj[4];
+			var vol = obj[5];						
+					
+			var openY = parseFloat((pxMax - open) * yScale).toFixed(4);
+			var highY = parseFloat((pxMax - high) * yScale).toFixed(4);
+			var lowY = parseFloat((pxMax - low) * yScale).toFixed(4);
+			var closeY = parseFloat((pxMax - close) * yScale).toFixed(4);
+			var volY = vol * yPixelperVol;
+			
+			var colrBcg = (close >= open)? 'SeaGreen' : 'LightCoral';					
+			var candleSegment = chartArea.append('g').attr('transform', 'translate('+ (xWidth - (i+1)*segmentWidth) + ', 0)').attr('class', 'candleSegment').attr('style', 'fill:'+colrBcg+'; stroke:'+colrBcg+';');
+			
+			var candleBcg = candleSegment.append('polyline'); 		
+			candleBcg.attr('class', 'candleBcg').attr('fill', 'white').attr('id', 'candleBcg'+pr_id+i).attr('i', i);			
+			candleBcg.attr('onmouseover', 'focusCandle(this,"'+pr_id+'", true);');
+			candleBcg.attr('onmouseout', 'focusCandle(this,"'+pr_id+'", false);');
+			
+			chartArea.on('mousemove', function(d){	
+				var coords = d3.mouse(this);
+				var y = coords[1];
+				var yPx = parseFloat(pxMax - y/yScale).toFixed(dc);
+				var diffPerctg = parseFloat(((yPx - lastPrice) / lastPrice) * 100).toFixed(2);				
+				d3.select('#yHighLightG'+pr_id).attr('visibility', 'visible').attr('transform', 'translate(0, '+y+')');
+				d3.select('#yHighLightPriceText'+pr_id).text(yPx); 
+				d3.select('#yHighLightPctText'+pr_id).text(diffPerctg + ' %'); 
+				document.body.style.cursor ='crosshair';
+			},false);
+			
+			var candleBcgShp = 0           + ' ' + 0      + ',' + 
+							  segmentWidth + ' ' + 0      + ',' +
+							  segmentWidth + ' ' + yHightMainChart + ',' + 
+							  0            + ' ' + yHightMainChart + ' ' ; 
+			candleBcg.attr('points', candleBcgShp);				
+			
+			// DISPLAY X AXIS DATE TICK
+			var delta = Math.floor(candlesToShow/xTicksCount);
+			if (i % delta == 0) {
+				var candleXTickLine = candleSegment.append('polyline').attr('class', 'candleXTickLine');
+				var candleXTickLineShp = 0 + ' ' + yHightMainChart      + ',' + 
+										 0 + ' ' + (yHightMainChart+5)  + ' '; 
+				candleXTickLine.attr('points', candleXTickLineShp);				
+				
+				var candleXTickText = candleSegment.append('text').attr('class', 'candleXTickText').attr('x', 0).attr('y', yHightMainChart+14).text(formatDate(new Date(candleData[pr_id][i][0]*1000), "candleTick"));
+			}
+			
+			//VOLUME BAR
+			if ($('#volumeCB').is(":checked")) {
+				var volCandle = candleSegment.append('polyline').attr('class', 'volCandle').attr('fill', colrBcg); 
+				var volCandleShp = xCMargin                + ' ' + (yHightMainChart)       + ',' + 
+								  (xCMargin + candleWidth) + ' ' + (yHightMainChart)        + ',' +
+								  (xCMargin + candleWidth) + ' ' + (yHightMainChart-volY) + ',' + 
+								   xCMargin                + ' ' + (yHightMainChart-volY) + ' ' ; 
+				volCandle.attr('points', volCandleShp);
+			}
+			
+			//OPEN-CLOSE BAR
+			var ocCandle = candleSegment.append('polyline');
+			var ocCandleShp = xCMargin                + ' ' + openY  + ',' + 
+							 (xCMargin + candleWidth) + ' ' + openY  + ',' +
+							 (xCMargin + candleWidth) + ' ' + closeY + ',' + 
+							  xCMargin                + ' ' + closeY + ' ' ; 
+			ocCandle.attr('points', ocCandleShp);
+		
+			//LOW-HIGH LINE
+			var lhCandle = candleSegment.append('polyline').attr('style', 'stroke-width:1');
+			var lhCandleShp = (xCMargin + (candleWidth/2)) + ' ' + lowY   + ',' + 
+							  (xCMargin + (candleWidth/2)) + ' ' + highY  + ' '; 
+			lhCandle.attr('points', lhCandleShp);
+			
+			/////////////////////////////////
+			/////////////////////////////////
+			if ($('#showBackTesting').is(":checked")) {
+			//if ($('#showTrade'+pr_i).is(":checked")) {
+				/*<p>SELL:</p>			
+				<input id="ema_shrt_below_ema_lng_s" type="checkbox"> EMA short below EMA long <br> 
+				<input id="closing_px_below_short_ema_s" type="checkbox"> closing PX below short EMA <br> 
+				<br>
+				<input id="stop_loss_s" type="text" value="-0.1"> STOP LOSS<br>
+				<input id="take_profit_s" type="text" value="-0.1"> TAKE PROFIT<br>
+				<hr>
+				<p>BUY:</p>			
+				<input id="ema_shrt_below_ema_lng_b" type="checkbox"> EMA short above EMA long <br>
+				<input id="closing_px_above_shrt_ema_b" type="checkbox"> closing PX above short EMA <br>
+				<hr>
+				<p>OTHER:</p>			
+				<input id="fee" type="text" value="0.003"> Fee<br>
+				<input id="slippage" type="text" value="0.0005"> Slippage <br> 
+				<hr>
+				<input id="showBackTesting" type="checkbox"> Show Backtesting <br>*/
+				var rsi = candleData[pr_id][i]["rsi"].rsi;
+				var ema1 = candleData[pr_id][i]["ema1"];
+				var ema2 = candleData[pr_id][i]["ema2"];
+				var cy = closeY;
+				
+				//SELL
+				if (rsi > Number($('#rsi_above_s').val())) {					
+					candleSegment.append('circle').attr('id', 'tradeCircle'+pr_id+i).attr('cx', xCMargin + (candleWidth/2)).attr('cy', cy).attr('r', 4).attr('style', 'fill:red; stroke:#421F00;');				
+				}
+
+				//BUY
+				if (rsi < Number($('#rsi_below_b').val())) {
+					candleSegment.append('circle').attr('id', 'tradeCircle'+pr_id+i).attr('cx', xCMargin + (candleWidth/2)).attr('cy', cy).attr('r', 4).attr('style', 'fill:green; stroke:#421F00;');					
+				}				
+				
+			}
+			/////////////////////////////////
+			/////////////////////////////////
+		}
+		
+		// DISPLAY CANDLE INFO BACKGROUND AND DETAILS
+		chartArea.append('rect').attr('x', 5).attr('y', 5).attr('width', 458).attr('height', 20).attr('class', 'cndlInfoBcg');
+		chartArea.append('text').attr('class', 'cndlInfoText').attr('id', 'cndlInfoText'+pr_id).attr('x', 10).attr('y', 18).text("CANDLE DATA");
+		
+		//ANALYSIS LINES
+		for (var e in analysis) {				
+			if ($('#'+analysis[e]+'CB').is(":checked")) {
+			
+				if (analysis[e] == "ema1" || analysis[e] == "ema2") {
+					var color = (analysis[e] == "ema1") ? "orange" : "lightblue";
+					var points = '';		
+					for (var i = 0; i < candlesToShow; i++) {			
+						var emaVal = candleData[pr_id][i][analysis[e]];		
+						var x = (xWidth - (i+0.5)*segmentWidth);
+						var y = parseFloat((pxMax - emaVal) * yScale).toFixed(4);
+						if (y>0 && y<yHightMainChart) points += x + ',' + y + ' ';	
+					}
+					chartArea.append('polyline').attr('style', 'fill:none; stroke:'+color+'; stroke-width:1;').attr('points', points);
+					
+				} else if (analysis[e] == "emacross") {
+					
+					//console.log("-------------");
+					//console.log("EMA CROSS START: " + $('#ema1').val() + " / " + $('#ema2').val() )
+					var crossEMA = "-------------\n";
+					crossEMA += "EMA CROSS START: " + $('#ema1').val() + " / " + $('#ema2').val() + "\n";
+					crossEMA += "DATE;EMAVAL;OPEN;CLOSE;INDIC\n"
+					for (var i = 0; i < candlesToShow; i++) {			
+						var intersection = candleData[pr_id][i][analysis[e]];
+						if (intersection != null) {
+							var x = (xWidth - (i+0.5)*segmentWidth);
+							var emaVal = candleData[pr_id][i]["ema1"];
+							var y = parseFloat((pxMax - emaVal) * yScale).toFixed(4);
+							if (y>0 && y<yHightMainChart) {		
+								var href = (intersection == "sell") ? '#emaCrossDotSell' : '#emaCrossDotBuy';
+								chartArea.append('use').attr('x', x).attr('y', y).attr('href', href);
+								//chartArea.append('use').attr('x', x).attr('y', y).attr('href', '#emaCrossDot');
+								//console.log(emaVal);
+								var d = new Date(candleData[pr_id][i][0]*1000).toISOString().substring(0, 19);
+								var openVal = candleData[pr_id][i][3]+"";
+								var closeVal = candleData[pr_id][i][4]+"";
+								crossEMA += d + ";" + emaVal.replace(".", ",") + ";" + openVal.replace(".", ",") + ";" + closeVal.replace(".", ",") + ";" + intersection + "\n";
+							}
+						}
+					}
+					crossEMA += "-------------";
+					$('#crossEMA'+pr_id).text(crossEMA);
+					//console.log("EMA CROSS END");
+					//console.log("-------------");
+					
+				} else if (analysis[e] == "rsi") {
+				
+					var rsiYMin = 100;	
+					var rsiYMax = 0;
+					for (var i = 0; i < candlesToShow; i++) {
+						if (Number(candleData[pr_id][i][analysis[e]].rsi)>0) {
+							var rsiVal = candleData[pr_id][i][analysis[e]].rsi;		
+							rsiYMin = (rsiVal < rsiYMin) ? rsiVal : rsiYMin;
+							rsiYMax = (rsiVal > rsiYMax) ? rsiVal : rsiYMax;				
+						}
+					}
+					rsiYMin = (30 < rsiYMin) ? 30 : rsiYMin; // 30 ALWAYS VISIBLE
+					rsiYMax = (70 > rsiYMax) ? 70 : rsiYMax; // 70 ALWAYS VISIBLE					
+					//MARGIN ON Y AXE
+					rsiYMin = rsiYMin * 0.93;
+					rsiYMax = rsiYMax * 1.04;
+					var rsiYScale = yHightRSIChart/(rsiYMax - rsiYMin);	
+					
+					var rsiArea = chartArea.append('g').attr('transform', 'translate(0, '+(yHightMainChart + mainChartXAxisXSpace)+')');
+					
+					var rsiBcg = rsiArea.append('rect').attr('x', 0).attr('y', 0).attr('width', xWidth).attr('height', yHightRSIChart).attr('style', 'stroke:lightgrey; stroke-width:1; fill:white; shape-rendering:crispEdges;');
+				
+					var y30 = (rsiYMax - 30) * rsiYScale;
+					var y70 = (rsiYMax - 70) * rsiYScale;
+					rsiArea.append('rect').attr('x', 0).attr('style', 'stroke:none; fill:#f9f9f9;').attr('y', y70).attr('width', xWidth-1).attr('height', y30-y70);
+															
+					rsiArea.append('text').attr('x', -3).attr('y', 5).attr('class', 'yTickPriceText').text("RSI ("+$("#rsi").val()+")");
+					
+					//RSI SEGMENTS
+					for (var i = 0; i < candlesToShow; i++) {
+						var rsiSegment = rsiArea.append('g').attr('transform', 'translate('+ (xWidth - (i+1)*segmentWidth) + ', 0)').attr('class', 'candleSegment');
+						var rsiBcg = rsiSegment.append('polyline').attr('id', 'rsi'+pr_id+i).attr('class', 'candleBcg').attr('fill', 'white').attr('i', i);
+						rsiBcg.attr('onmouseover', 'focusCandle(this,"'+pr_id+'",true);');
+						rsiBcg.attr('onmouseout', 'focusCandle(this,"'+pr_id+'",false);');
+						var rsiBcgShp = 0            + ' ' + 0              + ',' + 
+										segmentWidth + ' ' + 0              + ',' +
+										segmentWidth + ' ' + yHightRSIChart + ',' + 
+										0            + ' ' + yHightRSIChart + ' ' ; 
+						rsiBcg.attr('points', rsiBcgShp);
+					}					
+		
+					//RSI Y TICKS							
+					var rsiYTicks = [80, 70, 60, 50, 40, 30, 20];
+					for (var rr = 0; rr < rsiYTicks.length; rr++) {
+						if (rsiYTicks[rr] > rsiYMax || rsiYTicks[rr] < rsiYMin) continue;
+						var y = (rsiYMax - rsiYTicks[rr]) * rsiYScale;
+						var colr = (rsiYTicks[rr] == 30 || rsiYTicks[rr] == 70) ? '#ff9999' : 'lightgrey';
+						colr = (rsiYTicks[rr] == 50) ? 'lightgrey' : colr;	
+						
+						var rsiYTickLine = rsiArea.append('line').attr('x1', 0).attr('y1', y).attr('x2', xWidth+3).attr('y2', y).attr('style', 'stroke:'+colr+'; stroke-width:1; shape-rendering:crispEdges;');
+						
+						if (rsiYTicks[rr] == 50) rsiYTickLine.attr('stroke-dasharray', '5,5');
+						
+						if (rsiYTicks[rr] == 30 || rsiYTicks[rr] == 40 || rsiYTicks[rr] == 60 || rsiYTicks[rr] == 70) {
+							rsiArea.append('text').attr('x', xWidth+26).attr('y', y+3).attr('class', 'yTickPctText').text(rsiYTicks[rr] + " %");
+						}
+					}					
+					
+					var points = '';		
+					for (var i = 0; i < candlesToShow; i++) {
+						if (Number(candleData[pr_id][i][analysis[e]].rsi)>0) {
+							var rsiVal = candleData[pr_id][i][analysis[e]].rsi;		
+							var x = (xWidth - (i+0.5)*segmentWidth);
+							var y = parseFloat((rsiYMax - rsiVal) * rsiYScale).toFixed(4);
+							points += x + ',' + y + ' ';
+						}
+					}
+					rsiArea.append('polyline').attr('style', 'fill:none; stroke:#6e8b3d; stroke-width:1; ').attr('points', points);
+
+					// DISPLAY RSI INFO BACKGROUND AND DETAILS
+					rsiArea.append('rect').attr('x', 5).attr('y', 5).attr('width', 80).attr('height', 20).attr('class', 'cndlInfoBcg');
+					rsiArea.append('text').attr('class', 'cndlInfoText').attr('x', 10).attr('y', 18).attr('id', 'rsiInfoText'+pr_id).text("RSI DATA");
+				}
+			}
+		}
+		
+		//ADD HIGHLIGHT LINE ON TOP OF THE GRAPH
+		var yHighLightG = yTickers.append('g').attr('id', 'yHighLightG'+pr_id).attr('visibility', 'hidden');
+		
+		yHighLightG.append('line').attr('x1', 0).attr('y1', 0).attr('x2', xWidth).attr('y2', 0).attr('class', 'yHighLightLine');
+		yHighLightG.append('rect').attr('x', -42).attr('y', -6).attr('width', 40).attr('height', 12).attr('class', 'yTickLabelBcg').attr('fill', 'orange');
+		yHighLightG.append('rect').attr('x', xWidth+2).attr('y', -6).attr('width', 43).attr('height', 12).attr('class', 'yTickLabelBcg').attr('fill', 'orange');
+
+		yHighLightG.append('text').attr('id', 'yHighLightPriceText'+pr_id).attr('x', -5).attr('y', 3).attr('class', 'yTickPriceText').text('');
+		yHighLightG.append('text').attr('id', 'yHighLightPctText'+pr_id).attr('x', xWidth + 44).attr('y', 3).attr('class', 'yTickPctText').text(''); 
+		
+		focusCandle(null, pr_id, false);
+	}
+	
+	//ROLLING TRADES LINE
+	if (showTradeHistory)  {
+		
+		// INFO 
+		var tradingInfoText = svgChart.append('text').attr('class', 'tradingInfoText').attr('x', 7).attr('y', svgHeight - 4);
+	
+		var lastTrade = tradeHistoryData[pr_id][0].time;
+		var oldestTrade = tradeHistoryData[pr_id][tradeHistoryData[pr_id].length-1].time;		
+		var volumeCumul = 0;
+		for (var trade in tradeHistoryData[pr_id]) volumeCumul += Number(tradeHistoryData[pr_id][trade].size);
+		volumeCumul = parseFloat(volumeCumul/tradeHistoryCount).toFixed(3);		
+		if (lastTrade > oldestTrade) {
+			var speedPerSec = parseFloat( (tradeHistoryCount*60) / ((new Date(lastTrade) - new Date(oldestTrade)) / 1000) ).toFixed(1);
+			tradingInfoText.text('Rolling Trades No: ' + tradeHistoryCount + ' @ avg.speed: ' + speedPerSec + ' trades per min, avg.volume: ' + volumeCumul);
+		} else {
+			tradingInfoText.text('Rolling Trades No: ' + tradeHistoryCount);
+		}
+		
+		var xInc = ((xWidth- segmentWidth/2)/tradeHistoryCount > 22) ? 22 : parseFloat((xWidth- segmentWidth/2)/tradeHistoryCount).toFixed(5); //px space between dots	
+		var points = '';
+		for (var i = 0; i < tradeHistoryCount; i++) {
+
+			var price = parseFloat(tradeHistoryData[pr_id][i].price).toFixed(dc);
+			var y = (pxMax - price) * yScale; 
+			var x = xWidth - segmentWidth/2 - i*xInc;
+
+			points += x + ',' + y + ' ';
+			
+			//ADD DOT FOR EACH TRADE
+			var opacity = ( (1.2 - i/tradeHistoryCount) > 1 ) ? 1 : (1.2 - i/tradeHistoryCount) ;
+			chartArea.append('use').attr('x', x).attr('y', y).attr('href', '#tradeHistoryDot').attr('fill', ((tradeHistoryData[pr_id][i].side == 'sell') ? 'red' : 'green')).attr('opacity', opacity);
+		}
+		var tradingLine = chartArea.append('polyline').attr('style', 'fill:none; stroke:gray; stroke-width:1').attr('points', points);
+	}
+	
+	// WAITING SPINNER
+	/*var connectingInfo = chartArea.append('g').attr('id', 'connectingInfo'+pr_id);
+	if ($('#tradingHistoryCB').is(":checked")) {
+		connectingInfo.attr('transform', 'translate('+xWidth/2+', '+yHightMainChart/3+')');
+		var loadingSVG = '<text x="21" y="50" text-anchor="middle" style="fill:#FF6700; opacity:0.7;">Waiting for Trade Data</text><path opacity="0.2" fill="#FF6700" d="M20.201,5.169c-8.254,0-14.946,6.692-14.946,14.946c0,8.255,6.692,14.946,14.946,14.946 s14.946-6.691,14.946-14.946C35.146,11.861,28.455,5.169,20.201,5.169z M20.201,31.749c-6.425,0-11.634-5.208-11.634-11.634 c0-6.425,5.209-11.634,11.634-11.634c6.425,0,11.633,5.209,11.633,11.634C31.834,26.541,26.626,31.749,20.201,31.749z"/><path fill="#FF6700" d="M26.013,10.047l1.654-2.866c-2.198-1.272-4.743-2.012-7.466-2.012h0v3.312h0 C22.32,8.481,24.301,9.057,26.013,10.047z"><animateTransform attributeType="xml" attributeName="transform" type="rotate" from="0 20 20" to="360 20 20" dur="0.5s" repeatCount="indefinite"</path>';	
+		connectingInfo.html(loadingSVG);
+	}
+	//REMOVE CONNECTING SPINNER AFTER CONNECTION ESTABLISHED
+	if (showTradeHistory) $( "#connectingInfo"+pr_id ).remove();*/
+}  
+
+function createWaitingForTradeSpinner(pr_id) {
+
+	var svg = d3.select('#sectionForTradeHistoryTable'+pr_id).append('svg').attr('id', 'WaitingForTradeSpinner'+pr_id).attr('width', tradeHistoryTableWidth-2).attr('height', 180).attr('style', 'background-color: none');
+	var connectingInfo = svg.append('g').attr('id', 'connectingInfo'+pr_id).attr('transform', 'translate(50, 40)');
+	var loadingSVG = '<text x="21" y="50" style="fill:#FF6700; opacity:0.7;font-size:13px; text-anchor:middle">Waiting for Trade Data</text><path opacity="0.2" fill="#FF6700" d="M20.201,5.169c-8.254,0-14.946,6.692-14.946,14.946c0,8.255,6.692,14.946,14.946,14.946 s14.946-6.691,14.946-14.946C35.146,11.861,28.455,5.169,20.201,5.169z M20.201,31.749c-6.425,0-11.634-5.208-11.634-11.634 c0-6.425,5.209-11.634,11.634-11.634c6.425,0,11.633,5.209,11.633,11.634C31.834,26.541,26.626,31.749,20.201,31.749z"/><path fill="#FF6700" d="M26.013,10.047l1.654-2.866c-2.198-1.272-4.743-2.012-7.466-2.012h0v3.312h0 C22.32,8.481,24.301,9.057,26.013,10.047z"><animateTransform attributeType="xml" attributeName="transform" type="rotate" from="0 20 20" to="360 20 20" dur="0.5s" repeatCount="indefinite"</path>';	
+	connectingInfo.html(loadingSVG);	
+	
+}
+
+function focusCandle(e, pr_id, f) {	
+	try {	
+		if (!f) {
+			$('#yHighLightG'+pr_id).attr("visibility", "hidden");
+			document.body.style.cursor ="default";
+		}
+		var i = (e != null) ? e.getAttribute('i') : 0;
+		var colr = (f)? "gray" : "white";		
+		$('#rsi'+pr_id+i).attr("fill", colr);
+		$('#candleBcg'+pr_id+i).attr("fill", colr);		
+
+		var dm = (f) ? candleData[pr_id][i] : candleData[pr_id][0];
+			
+		var time = formatDate(new Date(dm[0]*1000), "candleTick");
+		var low = isNaN(dm[1]) ? '' : dm[1];
+		var high = isNaN(dm[2]) ? '' : dm[2];
+		var open = isNaN(dm[3]) ? '' : dm[3];		
+		var close = isNaN(dm[4]) ? '' : dm[4];	
+		var volume = isNaN(dm[5]) ? '' : parseFloat(dm[5]).toFixed(2);	
+		var cndlInfoText = time + " -  O: " + open + " C: " + close + " H:" + high + " L: " + low + " V: " + volume;
+		$('#cndlInfoText'+pr_id).text(cndlInfoText);
+		
+		var rsi = isNaN(dm["rsi"].rsi) ? '' : parseFloat(dm["rsi"].rsi).toFixed(2);
+		$('#rsiInfoText'+pr_id).text("RSI: " + rsi + "%");		
+		
+	} catch (err) {
+		writeToConsole("MISSING FOCUSCANDLE: " + pr_id + " / " + f + ": " + err);
+	}	 
+}
+
+function formatDate(date, type) {
+	if (type == "candleTick") {
+		var monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+		var day = date.getDate();
+		var min = date.getMinutes();
+		min = (min < 10 ? "0" : "") + min;
+		var monthIndex = date.getMonth();
+		return monthNames[monthIndex] + ' ' + date.getDate() + ', ' + date.getHours() + ':' + min;
+	} else {
+		var monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+		return "ERROR";
+	}
+}
+
+function reviewCandleData(pr_id) {
+	
+	if (candleData[pr_id].length == 0) return;	
+	
+	var granularity = Number($('#granularity').val());		
+	var candleDataTemp = [];
+	candleDataTemp[pr_id] = [];
+	var latest = candleData[pr_id][0][0]; //var latest = now - (now % granularity);
+	var oldest = candleData[pr_id][candleData[pr_id].length-1][0];
+	
+	var i = 0;	
+	while (latest >= oldest) {		
+		var isFound = false;
+		$.each(candleData[pr_id], function(key, obj) {
+			if (obj[0] == latest) {			
+				// CLEAN DUST FIRST
+				var clearMargin = 15;
+				if (obj[2] > obj[1]*clearMargin) {
+					writeToConsole("CANDLE DATA CLEANED: " + obj[2] + ' -> ' + obj[1]);
+					obj[2] = obj[1]; // REMOVE VERY HIGH PX
+				}
+				// INSERT A CLEARED CANDLE
+				candleDataTemp[pr_id][i] = obj;
+				isFound = true;
+				return false; // -> break loop
+			} 			
+		});		
+		if (!isFound) candleDataTemp[pr_id][i] = [latest]; 
+		latest = latest - granularity; 
+		i++;
+	}	
+	candleData[pr_id] = candleDataTemp[pr_id];
+	
+	changeOnTradingView(null);
+}
+
+function changeOnTradingView(evt) {
+	
+	if (evt != null) {
+		if (evt.id == "obZoomOut") {
+			orderBookZoomSelection++;
+			$("#obZoomIn").prop("disabled",false);
+			if (orderBookZoomSelection+1 > ORDERBOOK_ZOOM_SCALE.length-1) $("#obZoomOut").prop("disabled",true);			
+		}
+		if (evt.id == "obZoomIn") {
+			orderBookZoomSelection--;
+			$("#obZoomOut").prop("disabled",false);
+			if (orderBookZoomSelection-1 < 0) $("#obZoomIn").prop("disabled",true);
+		}
+	}
+	
+	for (var pi = 0; pi < selectedProductIDs.length; pi++) {			
+		var pr_id = selectedProductIDs[pi];
+		for (var e in analysis) {
+			calculateAnalysis(pr_id, analysis[e]);
+		}
+		renderChart(pr_id);	
+	}	
+}
+
+function calculateAnalysis(pr_id, type) {	
+	
+	if (type == "ema1" || type == "ema2") {		
+	
+		var n = Number($('#'+type).val());		
+		var lastClosePx;
+		var k = 2 / (n + 1);
+		// TODO: FIRST 'N'-VALUES SHOULD BE EMPTY - NOT IMPLEMENTED
+		for (var i = candleData[pr_id].length-1; i >= 0; i--) {			
+			var closePx = isNaN(candleData[pr_id][i][4]) ? lastClosePx : candleData[pr_id][i][4];		
+			lastClosePx = closePx;
+			if (i == candleData[pr_id].length-1) { //for the first entry
+				candleData[pr_id][i][type] = closePx;
+			} else {
+				var prevEMA = candleData[pr_id][i+1][type];
+				candleData[pr_id][i][type] = parseFloat( (closePx*k)+(prevEMA*(1-k)) ).toFixed(5);		
+			}
+		}
+		
+	} else if (type == "emacross") {		
+	
+		for (var i = candleData[pr_id].length-2; i > 0; i--) {			
+
+			//var itersection = false;
+			var itersection = null;
+			try {
+				var currEMA1 = candleData[pr_id][i]["ema1"];
+				var currEMA2 = candleData[pr_id][i]["ema2"];
+				var nextEMA1 = candleData[pr_id][i-1]["ema1"];
+				var nextEMA2 = candleData[pr_id][i-1]["ema2"];	
+
+				//Buy: the Fast EMA crossovers upward the slow EMA
+				if ( (currEMA1 <= currEMA2) && (nextEMA1 > nextEMA2) ) itersection = "buy";				
+				//Sell: the Fast EMA crossovers downward the slow EMA
+				if ( (currEMA1 >= currEMA2) && (nextEMA1 < nextEMA2) ) itersection = "sell";
+				
+				//itersection = lineIntersect(0,currEMA1,1,nextEMA1, 0,currEMA2,1,nextEMA2);				
+			} catch (err) {
+				console.log(pr_id + " " + type + " " + i + " " + err);
+			}
+			candleData[pr_id][i][type] = itersection;			
+		}
+		
+	} else if (type == "rsi") {
+	
+		var n = Number($('#'+type).val());	
+		var j = 0;
+
+		for (var i = candleData[pr_id].length-1; i >= 0; i--) {
+			
+			var price = candleData[pr_id][i][4];
+			var change = (j > 0) ? price - candleData[pr_id][i+1][4] : null;
+			var gain = (change > 0) ? change : null;
+			var loss = (change < 0) ? change*(-1) : null;
+
+			var rsiData = { id:(j+1), price:price, change:change, gain:gain, loss:loss, avg_gain:null, avg_loss:null, rs:null, rsi:null };
+			
+			if (j == n) {
+				var avg_gain = null;
+				var avg_loss = null;
+				for (var ii = candleData[pr_id].length-1; ii > (candleData[pr_id].length-1)-n; ii--) {
+					avg_gain += candleData[pr_id][ii][type].gain;
+					avg_loss += candleData[pr_id][ii][type].loss;
+				}
+				rsiData.avg_gain = avg_gain / n;
+				rsiData.avg_loss = avg_loss / n;			
+			} else if (j > n){
+				rsiData.avg_gain = ((candleData[pr_id][i+1][type].avg_gain * (n-1)) + rsiData.gain) / n;
+				rsiData.avg_loss = ((candleData[pr_id][i+1][type].avg_loss * (n-1)) + rsiData.loss) / n;
+			}			
+			if (j >=n ) {
+				rsiData.rs = rsiData.avg_gain / rsiData.avg_loss;
+				rsiData.rsi = (rsiData.avg_loss == 0) ? 100 : ( 100-(100/(1+rsiData.rs)) ) ;
+			}
+			candleData[pr_id][i][type] = rsiData;
+			j++;
+		}
+	}
+}
+
+function lineIntersect(x1,y1,x2,y2, x3,y3,x4,y4) {
+    var x=((x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4))/((x1-x2)*(y3-y4)-(y1-y2)*(x3-x4));
+    var y=((x1*y2-y1*x2)*(y3-y4)-(y1-y2)*(x3*y4-y3*x4))/((x1-x2)*(y3-y4)-(y1-y2)*(x3-x4));
+    if (isNaN(x)||isNaN(y)) {
+        return false;
+    } else {
+        if (x1>=x2) {
+            if (!(x2<=x&&x<=x1)) {return false;}
+        } else {
+            if (!(x1<=x&&x<=x2)) {return false;}
+        }
+        if (y1>=y2) {
+            if (!(y2<=y&&y<=y1)) {return false;}
+        } else {
+            if (!(y1<=y&&y<=y2)) {return false;}
+        }
+        if (x3>=x4) {
+            if (!(x4<=x&&x<=x3)) {return false;}
+        } else {
+            if (!(x3<=x&&x<=x4)) {return false;}
+        }
+        if (y3>=y4) {
+            if (!(y4<=y&&y<=y3)) {return false;}
+        } else {
+            if (!(y3<=y&&y<=y4)) {return false;}
+        }
+    }
+    return true;
+}
+//HOW TO LOGING TO GDAX:
+//https://developers.coinbase.com/docs/wallet/api-key-authentication
+//Mouse position:
+//https://stackoverflow.com/questions/10298658/mouse-position-inside-autoscaled-svg
+//http://jsfiddle.net/fLo4uatw/
+//new Date(lastTime*1000).toISOString().substring(0, 19)
+//parseFloat(newTradingData.price).toFixed(dc)
+
+function getCandlesFromExchange() {
+	candleData = [];
+	
+	for (var pi = 0; pi < selectedProductIDs.length; pi++) {	
+	
+		var pr_id = selectedProductIDs[pi];
+		candleData[pr_id] = [];
+		if ($('#granularity').val() != -1) {			
+			HTTPRequest(pr_id);			
+		} else {
+			renderChart(pr_id);
+		}		
+	}
+}
+
+function HTTPRequest(pr_id) {
+	var http_req = new XMLHttpRequest();
+	http_req.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+			candleData[pr_id] = JSON.parse(this.responseText);
+			reviewCandleData(pr_id); // NEEDED IT HERE AS THE FUNCTION IS ASYNCHRONUS
+		}
+	};
+	var url = "https://api.gdax.com/products/"+pr_id+"/candles?granularity="+$('#granularity').val();
+	http_req.open("GET", url, true);
+	http_req.send();	
+}
+
+function availableProductsGet(pr_id, what) {
+	for (var i = 0; i < availableProducts.length; i++) {
+		if(availableProducts[i].id == pr_id) {
+			if (what == "dc") {
+				return (availableProducts[i].quote_increment.split('.')[1] || []).length;
+			}
+		}		
+	}
+}
+
+function ProductsHTTPRequest() {
+	var http_req = new XMLHttpRequest();
+	http_req.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+			availableProducts = JSON.parse(this.responseText);
+			init();
+		}
+	};
+	var url ="https://api.gdax.com/products/";
+	http_req.open("GET", url, true);
+	http_req.send();	
+}
+/* https://api.gdax.com/products/
+[{"id":"BCH-BTC","base_currency":"BCH","quote_currency":"BTC","base_min_size":"0.01","base_max_size":"200","quote_increment":"0.00001","display_name":"BCH/BTC","status":"online","margin_enabled":false,"status_message":null,"min_market_funds":"0.001","max_market_funds":"30","post_only":false,"limit_only":false,"cancel_only":false},
+*/
+function removeProduct() {	
+	if (selectedProductIDs.length == 0) return;
+	var pr_id_to_remove = $('#selectedProducts').val();	
+	var ri = selectedProductIDs.indexOf(pr_id_to_remove);
+	selectedProductIDs.splice(ri, 1);
+	init();
+}
+
+function addProduct(){	
+	if (availableProducts.length == 0) return;	
+	if (selectedProductIDs.length > 2) {
+		alert("Note, this is a client side app, performance will go down adding a new product as all calculations is done only in your browser tab.\n\nHaving more than 2 products active impacts the browser performance.\nTry to remove a product before you add a new one to get the better performance.");
+	}	
+	var pr_id_to_add = $('#availableProducts').val();	
+	selectedProductIDs.push(pr_id_to_add);	
+	init();
+}
+
+$(document).ready (function() {
+	ProductsHTTPRequest();
+});
+  </script>
+</head>
+<body>
+	<div id="container" style="width:100%; min-height: 100%; margin-bottom: -60px;"> 		
+		<header id="header" style="clear:left; padding:5px; width:100%;">
+			<span style="margin-left:72px; float: left;font-size:12px;"><b>M'Levy GDAX BOT ...</b></span>
+			<span style="margin-left:10px;float:left;font-size:12px;">Chart View:</span>
+			<select id="granularity" style="margin-left:10px; float:left;"></select>
+			<select id="candleCounter" style="margin-left:1px; float:left;"></select>
+			
+			<script language="javascript" type="text/javascript">
+				$.each(granulOpts, function(key, obj) {		
+					$('#granularity').append($('<option/>', {value: Number(key)}).text(obj[0])); 
+					if (obj[1] != '') $("#granularity").val(key);
+				});
+				$.each(candleCounterOpts, function(key, obj) {		
+					$('#candleCounter').append($('<option/>', {value: Number(key)}).text(obj[0])); 
+					if (obj[1] != '') $("#candleCounter").val(key);
+				});
+			</script>
+			
+			<span style="margin-left:20px; float:left;font-size:12px;">Rolling Trade:</span>	
+			<input type="checkbox" id="tradingHistoryCB" checked style="float:left;" onchange="changeOnTradingView(this)" title="Show/Hide on chart"> 
+			<span style="margin-left:20px; float:left;font-size:12px;">Volume:</span>	
+			<input type="checkbox" id="volumeCB" checked style="float:left;" onchange="changeOnTradingView(this)" title="Show/Hide on chart"> 			
+			
+			<span style="margin-left:20px; float:left;font-size:12px;">EMA:</span>			
+			<input type="checkbox" id="ema1CB" checked style="float:left;" onchange="changeOnTradingView(this)" title="Show/Hide on chart"> 
+			<input type="text" id="ema1" value="12" style="float:left;background-color:orange;width:25px;" maxlength="3" size="3" onchange="changeOnTradingView(this)" title="Change & press Enter">
+			<input type="checkbox" id="ema2CB" checked style="margin-left:5px; float:left;" onchange="changeOnTradingView(this)" title="Show/Hide on chart"> 
+			<input type="text" id="ema2" value="26" style="float:left; background-color:lightblue; width:25px;" maxlength="3" size="3" onchange="changeOnTradingView(this)" title="Change & press Enter">
+			
+			<span style="margin-left:5px; float:left;font-size:12px;">Cross:</span>
+			<input type="checkbox" id="emacrossCB" checked style="margin-left:5px; float:left;" onchange="changeOnTradingView(this)" title="Show/Hide on chart"> 			
+						
+			<span style="margin-left:20px; float:left;font-size:12px;">RSI:</span>			
+			<input type="checkbox" id="rsiCB" checked style="float:left;" onchange="changeOnTradingView(this)" title="Show/Hide on chart"> 
+			<input type="text" id="rsi" value="14" style="float:left;background-color:green;width:25px;" maxlength="3" size="3" onchange="changeOnTradingView(this)" title="Change & press Enter"><!--onkeypress="return [8,13,46,48,49,50,51,52,53,54,55,56,57].includes(event.charCode)"-->
+			
+			<span style="margin-left:20px; float:left;font-size:12px;">Order Book Zoom:</span>
+			<button id="obZoomOut" style="width:20px;margin:0px;padding:0px;border-radius:25%;float:left;" onClick="changeOnTradingView(this)" title="Zoom Out Order Book">-</button>
+			<button id="obZoomIn" style="width:20px;margin:0px;padding:0px;border-radius:25%;float:left;" onClick="changeOnTradingView(this)" title="Zoom In Order Book">+</button>			
+			
+			<span style="margin-left:10px;float:left;font-size:12px;">Available Products:</span>
+			<select id="availableProducts" style="margin-left:1px; float:left;"></select>
+			<button id="addProduct" style="margin:0px;padding:3px;float:left;" onClick="addProduct()" title="Add Product">Add Product</button>
+
+			<span style="margin-left:10px;float:left;font-size:12px;">Selected Products:</span>
+			<select id="selectedProducts" style="margin-left:1px; float:left;"></select>
+			<button id="removeProduct" style="margin:0px;padding:3px;float:left;" onClick="removeProduct()" title="Remove Product">Remove Product</button>
+			
+			<!--table style="margin-left:100px; float:left;">
+				<tr style="height:10px">
+					<td style="width:10px; background-color: #009c1a;"></td>
+					<td style="width:10px; background-color: #22b600;"></td>
+					<td style="width:10px; background-color: #26cc00;"></td>
+					<td style="width:10px; background-color: #7be382;"></td>
+					<td style="width:10px; background-color: #d2f2d4;"></td>
+					
+					<td style="width:10px; background-color: #ffe5e5;"></td>
+					<td style="width:10px; background-color: #ff9696;"></td>
+					<td style="width:10px; background-color: #ff7e7e;"></td>
+					<td style="width:10px; background-color: #ff6969;"></td>
+					<td style="width:10px; background-color: #ff5353;"></td>
+					<td style="width:10px; background-color: #ff3b3b;"></td>
+				</tr>
+			</table-->
+			<button id="myBtn">Configuration</button>
+			<span style="">&nbsp;</span>
+		</header>
+		<div style="height:1px; background-color:gray; width:100%; " calss="row"></div>
+		<section id="productSections" style="white-space:nowrap; min-width:1650px; "></section>		
+		<div style="height:60px;"></div>
+	</div>	
+	<footer id="console" style="background-color: lightgreen; height: 60px; overflow-y: scroll; padding:2px 5px;"><p></p></footer>
+	
+	<div class="nav">
+		<button style="z-index:1000; font-size:11px; width:65px;" id="toggleCV" title="Show CV">Show Info</button>
+	</div>
+	<div id="cv" class="cv" style="display: none;">
+		<div class="title">
+			Michal Lewczuk
+		</div>
+		<div id="cv_content" style="overflow: auto;">
+			<div style="display: table;">
+				<div style="display: table-row;">
+					<div style="display: table-cell; padding:10px 4px 4px 20px; vertical-align: top; text-align: center; ">
+						<img id="cvpcs" src="http://adventure-aviators.com/_/my_201609_1.jpg" style="width:150px; border:0; margin-top:12px">	<br>
+						<span style="font-size:11px"><a href="mailto:michal.lewcz@gmail.com" target="_top">michal.lewcz@gmail.com</a>						
+					</div>		
+					<div style="display: inline-block; padding:20px 20px 0px 20px; margin:0px; text-align:top;">
+						This entire <b>"M'Levy GDAX Bot"</b> showcase is written in <b>about 1'500 lines of code</b>, in one html file
+						<ul style="margin:0px">
+							<li>Only client-side technologies are used: jQuery, D3, SVG - no server-side - are applied in this approach creating <b>a portable solution</b> (it can be copy-pasted)</li>
+							<li>All calculations, data processing and rendering is done on client's machine therefore the performance is dependent on a selected view mode and its RAM capabilities</li>
+							<li>The showcase allows to view and to analyze real-time trading on cryptocurrencies  listed on the <a href="https://www.gdax.com/trade/BTC-USD" target="_blank">GDAX crypto exchange</a></li>
+							<li>The data feed (database snapshots and updates) runs over WebSocket connections and GDAX API's</li>
+							<li>The fully automated trading bot (disabled here) can be parameterized depending on personal trading strategies and risk levels</li>
+						</ul>
+						<br><br>
+					</div>
+				</div>
+			</div>
+		</div>		
+		<div class="footer">
+			by M'Levy
+		</div>		
+	</div>
+	<script>
+	$( "#toggleCV" ).click(function() {
+		$( "#cv" ).toggle( "slow", function() { });
+	    $(this).text(function(i, text){
+			return text === "Hide Info" ? "Show Info" : "Hide Info";
+		})
+	});	
+	$('#cvpcs').hover(function() {
+		$(this).css("cursor", "pointer");
+		$(this).animate({
+			width: "450px", height: "auto" }, 'slow');
+		}, function() {
+			$(this).animate({
+				width: "150px" }, 'slow');
+	});
+	
+	</script>	
+	<!-- The Modal 
+	/////////////////////////////////
+	/////////////////////////////////
+	-->
+	<div id="myModal" class="modal">
+		<div id="myModalContent" class="modal-content">
+			<div class="modal-header"><span class="close">&times;</span><p style="margin:3px 0px 0px 0px">Configuration</p></div>
+			<div class="modal-body">
+				<p>SELL:</p>			
+				<input id="rsi_above_s" type="text" value="66"> RSI above<br>
+				<input id="ema_shrt_below_ema_lng_s" type="checkbox"> EMA short below EMA long <br> 
+				<input id="closing_px_below_short_ema_s" type="checkbox"> closing PX below short EMA <br> 
+				<br>
+				<input id="stop_loss_s" type="text" value="-0.1"> STOP LOSS<br>
+				<input id="take_profit_s" type="text" value="-0.1"> TAKE PROFIT<br>
+				<hr>
+				<p>BUY:</p>			
+				<input id="rsi_below_b" type="text" value="33"> RSI below<br>
+				<input id="ema_shrt_below_ema_lng_b" type="checkbox"> EMA short above EMA long <br>
+				<input id="closing_px_above_shrt_ema_b" type="checkbox"> closing PX above short EMA <br>
+				<hr>
+				<p>OTHER:</p>			
+				<input id="fee" type="text" value="0.003"> Fee<br>
+				<input id="slippage" type="text" value="0.0005"> Slippage <br> 
+				<hr>
+				<input id="showBackTesting" type="checkbox"> Show Backtesting <br>
+			</div>
+			<div class="modal-footer"><center><span>by M'Levy</span></center></div>
+		</div>
+	</div>	
+	<script>
+		var modal = document.getElementById('myModal');
+		$('#myModalContent').draggable(); 
+		var modalOpenBtn = document.getElementById("myBtn");
+		var modalCloseSpan = document.getElementsByClassName("close")[0];
+		modalOpenBtn.onclick = function() { modal.style.display = "block"; }
+		modalCloseSpan.onclick = function() { modal.style.display = "none"; }
+		window.onclick = function(event) { if (event.target == modal) modal.style.display = "none"; }
+	</script>
+	<!--
+	/////////////////////////////////
+	/////////////////////////////////
+	-->	
+</body>

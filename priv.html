@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet"> 
+	<style>
+	
+	/*
+	https://www.w3schools.com/css/css3_mediaqueries_ex.asp
+	https://developers.google.com/web/fundamentals/design-and-ux/responsive/
+	https://googlesamples.github.io/web-fundamentals/fundamentals/design-and-ux/responsive/media-queries.html
+	https://www.w3schools.com/howto/tryit.asp?filename=tryhow_css_responsive_text
+	https://www.w3schools.com/css/tryit.asp?filename=tryresponsive_mediaquery
+	*/
+		body { font-family: 'Roboto'; font-size: 12px; }
+		table, th, td { border: 1px solid gray; border-color: #0ee51d; padding: 3px; font-size: 12px; }
+		table { border-collapse: collapse; }
+		td { text-align: right; }
+		.title_left { font-weight: bold; background-color: lightgray; text-align:left; }
+		.title_center { font-weight: bold; background-color: lightgray; text-align:center; }
+		
+		a { font-size: 12px; }
+		hr { border: 0; height: 1px; background: #333; background-image: linear-gradient(to right, orange, gray, orange); }
+		pre { font-size: 12px; }
+		.row:after { content:""; display:table; clear:both; }		
+		.cell { float:left; }
+
+	</style>
+	<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+	<title>ML-Priv</title>	
+</head>
+<body>
+
+<div class="row" style="margin-top:8px; ">
+
+	<div style="float:left; margin-left:8px; ">
+
+		<div class="row">
+			<div class="row">
+				<div class="cell title_left" style="width:70px; padding:2px">BTC-EUR</div>
+				<div id="last_BTC-EUR" class="cell" style="width:50px; padding:2px; text-align:right; ">last</div>
+				<div id="stat_pct_BTC-EUR" class="cell" style="width:50px; padding:2px; text-align:right; ">stat %</div>
+				<div id="stat_px_BTC-EUR" class="cell" style="width:50px; padding:2px; text-align:right; ">stat px</div>
+				<div id="stat_vol_BTC-EUR" class="cell" style="width:50px; padding:2px; text-align:right; ">stat v</div>
+				<div id="stat_time_BTC-EUR" class="cell" style="width:60px; padding:2px; text-align:right; font-size:11px; ">stat time</div>
+			</div>
+			<div class="row">
+				<div class="cell title_left" style="width:70px; padding:2px">ETH-EUR</div>
+				<div id="last_ETH-EUR" class="cell" style="width:50px; padding:2px; text-align:right; ">last</div>
+				<div id="stat_pct_ETH-EUR" class="cell" style="width:50px; padding:2px; text-align:right; ">stat %</div>
+				<div id="stat_px_ETH-EUR" class="cell" style="width:50px; padding:2px; text-align:right; ">stat px</div>
+				<div id="stat_vol_ETH-EUR" class="cell" style="width:50px; padding:2px; text-align:right; ">stat v</div>
+				<div id="stat_time_ETH-EUR" class="cell" style="width:60px; padding:2px; text-align:right; font-size:11px; ">stat time</div>				
+			</div>
+			<div class="row">
+				<div class="cell title_left" style="width:70px; padding:2px">ETH-BTC</div>
+				<div id="last_ETH-BTC" class="cell" style="width:50px; padding:2px; text-align:right; ">last</div>
+				<div id="stat_pct_ETH-BTC" class="cell" style="width:50px; padding:2px; text-align:right; ">stat %</div>
+				<div id="stat_px_ETH-BTC" class="cell" style="width:50px; padding:2px; text-align:right; ">stat px</div>
+				<div id="stat_vol_ETH-BTC" class="cell" style="width:50px; padding:2px; text-align:right; ">stat v</div>
+				<div id="stat_time_ETH-BTC" class="cell" style="width:60px; padding:2px; text-align:right; font-size:11px; ">stat time</div>				
+			</div>
+			<div class="row">
+				<div class="cell title_left" style="width:70px; padding:2px"><a href="https://www.bloomberg.com/quote/EURCHF:CUR" target=\"_blank\">EUR-CHF</a></div>
+				<div id="fx_EUR-CHF" class="cell" style="width:50px; padding:2px; text-align:right; ">EUR-CHF</div>					
+				<div class="cell" style="width:50px; padding:2px; text-align:right; "></div>
+			</div>			
+		</div>
+		
+		<hr>
+		<div class="row">
+			<div class="row">
+				<div class="cell title_left" style="width:70px; padding:2px">TOTAL GAIN</div>
+				<div id="total_gain_chf" class="cell" style="width:50px; padding:2px; text-align:right; ">total_gain_chf</div>
+				<div class="cell" style="width:50px; padding:2px; text-align:left; ">CHF</div>
+				<div id="btc_converted_eth" class="cell" style="width:50px; padding:2px; text-align:right; ">btc_converted_eth</div>
+				<div class="cell" style="width:50px; padding:2px; text-align:left; ">CONVERTED</div>				
+			</div>
+			<div class="row">
+				<div class="cell title_left" style="width:70px; padding:2px">GAIN %</div>
+				<div id="total_gain_pct" class="cell" style="width:50px; padding:2px; text-align:right; ">total_gain_pct</div>
+				<div class="cell" style="width:50px; padding:2px; text-align:left; ">%</div>
+			</div>
+		</div>
+		
+		<hr>		
+		<div class="row">
+			<div class="row">
+				<div class="cell" style="width:70px; padding:2px"></div>
+				<div class="cell title_center" style="width:70px; padding:2px; ">UNITS</div>
+				<div class="cell title_center" style="width:70px; padding:2px; ">EUR</div>
+				<div class="cell title_center" style="width:70px; padding:2px; ">ENTRY@</div>
+			</div>
+			<div class="row">
+				<div class="cell title_left" style="width:70px; padding:2px">TOTAL BTC</div>
+				<div id="total_btc_units" class="cell" style="width:70px; padding:2px; text-align:right; ">total_btc_units</div>
+				<div id="total_btc_eur" class="cell" style="width:70px; padding:2px; text-align:right; ">total_btc_eur</div>
+				<div id="btc_entry_px_eur" class="cell" style="width:70px; padding:2px; text-align:right; ">btc_entry_px_eur</div>
+			</div>
+			<div class="row">
+				<div class="cell title_left" style="width:70px; padding:2px">TOTAL ETH</div>
+				<div id="total_eth_units" class="cell" style="width:70px; padding:2px; text-align:right; ">total_eth_units</div>
+				<div id="total_eth_eur" class="cell" style="width:70px; padding:2px; text-align:right; ">total_eth_eur</div>
+				<div id="eth_entry_px_eur" class="cell" style="width:70px; padding:2px; text-align:right; ">eth_entry_px_eur</div>
+			</div>
+			<div class="row">
+				<div class="cell title_left" style="width:70px; padding:2px">INVST CHF</div>
+				<div id="total_investment_chf" class="cell" style="width:70px; padding:2px; text-align:right; ">total_investment_chf</div>
+				<div id="total_investment_eur" class="cell" style="width:70px; padding:2px; text-align:right; ">total_investment_eur</div>
+				<div class="cell" style="width:70px; padding:2px; text-align:right; "></div>
+			</div>
+			<div class="row">
+				<div class="cell title_left" style="width:70px; padding:2px">HOLDINGS</div>
+				<div id="total_holdings_chf" class="cell" style="width:70px; padding:2px; text-align:right; ">total_holdings_chf</div>
+				<div id="total_holdings_eur" class="cell" style="width:70px; padding:2px; text-align:right; ">total_holdings_eur</div>
+				<div class="cell" style="width:70px; padding:2px; text-align:right; ">&nbsp;</div>
+			</div>
+			<div class="row">
+				<div class="cell title_left" style="width:70px; padding:2px;  ">&nbsp;</div>
+				<div class="cell title_left" style="width:70px; padding:2px; ">TREZOR</div>
+				<div class="cell title_left" style="width:70px; padding:2px; ">&nbsp;</div>
+				<div class="cell title_left" style="width:70px; padding:2px; ">&nbsp;</div>
+			</div>
+			<div class="row">
+				<div class="cell title_left" style="width:70px; padding:2px">BTC</div>
+				<div id="trezor_btc_units" class="cell" style="width:70px; padding:2px; text-align:right; ">trezor_btc_units</div>
+				<div id="trezor_BTC-EUR" class="cell" style="width:70px; padding:2px; text-align:right; ">trezor_btc_eur</div>
+				<div class="cell" style="width:70px; padding:2px; text-align:right; "></div>
+			</div>
+			<div class="row">
+				<div class="cell title_left" style="width:70px; padding:2px">ETH</div>
+				<div id="trezor_eth_units" class="cell" style="width:70px; padding:2px; text-align:right; ">trezor_eth_units</div>
+				<div id="trezor_ETH-EUR" class="cell" style="width:70px; padding:2px; text-align:right; ">trezor_eth_eur</div>
+				<div class="cell" style="width:70px; padding:2px; text-align:right; "></div>
+			</div>
+			<div class="row">
+				<div class="cell title_left" style="width:70px; padding:2px;  ">&nbsp;</div>
+				<div class="cell title_left" style="width:70px; padding:2px; ">GDAX</div>
+				<div class="cell title_left" style="width:70px; padding:2px; ">&nbsp;</div>
+				<div class="cell title_left" style="width:70px; padding:2px; ">&nbsp;</div>
+			</div>
+			<div class="row">
+				<div class="cell title_left" style="width:70px; padding:2px">BTC</div>
+				<div id="gdax_btc_units" class="cell" style="width:70px; padding:2px; text-align:right; ">gdax_btc_units</div>
+				<div id="gdax_BTC-EUR" class="cell" style="width:70px; padding:2px; text-align:right; ">gdax_btc_eur</div>
+				<div class="cell" style="width:70px; padding:2px; text-align:right; "></div>
+			</div>
+			<div class="row">
+				<div class="cell title_left" style="width:70px; padding:2px">ETH</div>
+				<div id="gdax_eth_units" class="cell" style="width:70px; padding:2px; text-align:right; ">gdax_eth_units</div>
+				<div id="gdax_ETH-EUR" class="cell" style="width:70px; padding:2px; text-align:right; ">gdax_eth_eur</div>
+				<div class="cell" style="width:70px; padding:2px; text-align:right; "></div>
+			</div>
+			<div class="row">
+				<div class="cell title_left" style="width:70px; padding:2px">EUR</div>
+				<div id="gdax_eur_units" class="cell" style="width:70px; padding:2px; text-align:right; ">gdax_eur_units</div>
+				<div id="gdax_eur_eur" class="cell" style="width:70px; padding:2px; text-align:right; ">gdax_eur_eur</div>
+				<div class="cell" style="width:70px; padding:2px; text-align:right; "></div>
+			</div>				
+		</div>		
+		
+		<div class="row">
+		<!-- TradingView Widget BEGIN -->
+<div class="tradingview-widget-container">
+  <div id="tv-medium-widget"></div>
+  <div class="tradingview-widget-copyright"><a href="https://www.tradingview.com/symbols/COINBASE-BTCUSD/" rel="noopener" target="_blank"><span class="blue-text">BTCUSD</span></a> <span class="blue-text">and</span> <a href="https://www.tradingview.com/symbols/COINBASE-ETHBTC/" rel="noopener" target="_blank"><span class="blue-text">ETHBTC Quotes</span></a> by TradingView</div>
+  <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+  <script type="text/javascript">
+  new TradingView.MediumWidget(
+  {
+  "container_id": "tv-medium-widget",
+  "symbols": [
+    [
+      "BTCUSD",
+      "COINBASE:BTCUSD|1d"
+    ],
+    "COINBASE:ETHBTC|1d"
+  ],
+  "greyText": "Quotes by",
+  "gridLineColor": "rgba(151, 0, 0, 1)",
+  "fontColor": "#83888D",
+  "underLineColor": "#dbeffb",
+  "trendLineColor": "#4bafe9",
+  "width": "412px",
+  "height": "200px",
+  "locale": "en",
+  "chartOnly": true
+}
+  );
+  </script>
+</div>
+<!-- TradingView Widget END -->
+		</div>
+		
+		<div id="console" class="row" style="background-color: lightgreen; height: 40px; width: 400px; overflow-y: scroll; padding:2px 5px; margin-top:20px; "><p></p></div>
+	
+	</div>
+</div>
+
+<script language="javascript" type="text/javascript">
+	var websocket = null;
+	var wsUri = "wss://ws-feed.gdax.com/";
+	var reconnectCount = 0;
+	var availableProducts = null;
+	var selectedProductIDs = ["BTC-EUR", "ETH-EUR","ETH-BTC"];
+	
+	var f = 1;
+	var total_investment_chf = 313410;
+	var trezor_btc_units = 0;
+	var trezor_eth_units = 0;
+	var gdax_btc_units = 0;
+	var gdax_eth_units = 558.00714870;
+	var gdax_eur_units = 0;
+	
+	var trezor_btc_in_eur = 0;
+	var trezor_eth_in_eur = 0;
+	var gdax_btc_in_eur = 0;
+	var gdax_eth_in_eur = 0;
+	
+	var md = [];
+	md["BTC-EUR"] = { "px_last":0, "px_open":0, "volume_24h":0, "time":"" };
+	md["ETH-EUR"] = { "px_last":0, "px_open":0, "volume_24h":0, "time":"" };
+	md["ETH-BTC"] = { "px_last":0, "px_open":0, "volume_24h":0, "time":"" };
+	md["EUR-CHF"] = { "fx":0, "time":"" };
+		
+	function recalculateAndUpdate(type, pr_id, jsonMsg) {
+
+		total_investment_chf = total_investment_chf * f;
+		trezor_btc_units = trezor_btc_units * f;
+		trezor_eth_units = trezor_eth_units * f;
+		gdax_btc_units = gdax_btc_units * f;
+		gdax_eth_units = gdax_eth_units * f;
+		gdax_eur_units = gdax_eur_units * f;
+		
+		var total_btc_units = 0;
+		var total_eth_units = 0;
+		var total_holdings_eur = 0;		
+		var total_gain_chf = 0;
+		var total_gain_pct = 0;		
+		
+		jsonMsg = JSON.parse(jsonMsg);
+		
+		$('#total_investment_chf').text( parseFloat( total_investment_chf ).toFixed( 0 ) );
+		$('#trezor_btc_units').text( trezor_btc_units );
+		$('#trezor_eth_units').text( trezor_eth_units );
+		$('#gdax_btc_units').text( gdax_btc_units );
+		$('#gdax_eth_units').text( parseFloat( gdax_eth_units ).toFixed( 2 ) );
+		$('#gdax_eur_units').text( gdax_eur_units );
+		$('#gdax_eur_eur').text( gdax_eur_units );
+		
+		if (type == "FX") {			
+
+			md[pr_id].fx = jsonMsg[pr_id.replace("-", "_")].val;
+			md[pr_id].time = new Date().toISOString();
+			
+		} else if (type == "ticker") {
+			
+			md[pr_id].px_last = Number(jsonMsg.price);
+			md[pr_id].time = jsonMsg.time //new Date().toISOString();
+			
+			var sideColorBg = (jsonMsg.side == "buy") ? "#7be382": "#ff9696";						
+			$('#last_'+pr_id).effect("highlight", {color: sideColorBg}, 1500);
+			
+			// UPDATE PAGE TITLE
+			//var dc = availableProductsGet(pr_id, "dc"); // DELETE FUNCTION availableProductsGet
+			//var px = parseFloat( md[pr_id].px_last ).toFixed( dc );		
+			//document.title = pr_id + ' ' + md[pr_id].px_last;			
+			
+		} else if (type == "stats") {			
+			
+			md[pr_id].px_last = Number(jsonMsg.last);
+			md[pr_id].px_open = Number(jsonMsg.open);
+			md[pr_id].volume_24h = Number(jsonMsg.volume);
+			md[pr_id].time = new Date().toISOString();
+						
+		}
+		//$('#fx_EUR-CHF').effect("highlight", {color: "orange"}, 3000);
+		$('#last_'+pr_id).text( md[pr_id].px_last );
+		
+		$('#fx_EUR-CHF').text( parseFloat( md["EUR-CHF"].fx ).toFixed( 4 ) );		
+		$('#total_investment_eur').text( parseFloat( (total_investment_chf /md["EUR-CHF"].fx) ).toFixed( 0 ) );
+		
+		var pct_change = ((md[pr_id].px_last - md[pr_id].px_open) / md[pr_id].px_open)*100;			
+		var colorBg = (pct_change >= 0) ? "#7be382": "#ff9696";			
+		$('#stat_pct_'+pr_id).css( {'color': colorBg } );	
+		$('#stat_pct_'+pr_id).text( parseFloat( pct_change ).toFixed( 2 )+'%' );
+		$('#stat_px_'+pr_id).css( {'color': colorBg } );	
+		$('#stat_px_'+pr_id).text( md[pr_id].px_open );
+		$('#stat_vol_'+pr_id).text( parseFloat( md[pr_id].volume_24h ).toFixed( 0 ) );
+
+		if (pr_id == "BTC-EUR") {
+
+			trezor_btc_in_eur = trezor_btc_units * md[pr_id].px_last;
+			$('#trezor_'+pr_id).text( parseFloat( trezor_btc_in_eur ).toFixed( 0 ) );			
+			
+			gdax_btc_in_eur = gdax_btc_units * md[pr_id].px_last;
+			$('#gdax_'+pr_id).text( parseFloat( gdax_btc_in_eur ).toFixed( 0 ) );			
+			
+		} else if (pr_id == "ETH-EUR") {
+
+			trezor_eth_in_eur = trezor_eth_units * md[pr_id].px_last; 
+			$('#trezor_'+pr_id).text( parseFloat( trezor_eth_in_eur ).toFixed( 0 ) );							
+			
+			gdax_eth_in_eur = gdax_eth_units * md[pr_id].px_last;
+			$('#gdax_'+pr_id).text( parseFloat( gdax_eth_in_eur ).toFixed( 0 ) );			
+			
+		} 
+
+		total_btc_units = (trezor_btc_units + gdax_btc_units) + (trezor_eth_units + gdax_eth_units) * md["ETH-BTC"].px_last;
+		$('#total_btc_units').text( parseFloat( (total_btc_units) ).toFixed( 2 ) );
+		$('#total_btc_eur').text( parseFloat( (total_btc_units * md["BTC-EUR"].px_last) ).toFixed( 0 ) );
+		$('#btc_entry_px_eur').text( parseFloat( ( (total_investment_chf /md["EUR-CHF"].fx) / total_btc_units ) ).toFixed( 0 ) );
+				
+		total_eth_units = (trezor_eth_units + gdax_eth_units) + (trezor_btc_units + gdax_btc_units) / md["ETH-BTC"].px_last;
+		$('#total_eth_units').text( parseFloat( (total_eth_units) ).toFixed( 2 ) );
+		$('#total_eth_eur').text( parseFloat( (total_eth_units * md["ETH-EUR"].px_last) ).toFixed( 0 ) );
+		$('#eth_entry_px_eur').text( parseFloat( ( (total_investment_chf /md["EUR-CHF"].fx) / total_eth_units ) ).toFixed( 0 ) );
+		$('#btc_converted_eth').text( parseFloat( (total_eth_units * md["ETH-EUR"].px_last) / md["BTC-EUR"].px_last ).toFixed( 2 ) );
+		
+		total_holdings_eur = trezor_btc_in_eur + trezor_eth_in_eur + gdax_btc_in_eur + gdax_eth_in_eur + gdax_eur_units;
+		$('#total_holdings_eur').text( parseFloat( total_holdings_eur ).toFixed( 0 ) );
+		
+		total_holdings_chf = total_holdings_eur * md["EUR-CHF"].fx;
+		$('#total_holdings_chf').text( parseFloat( total_holdings_chf ).toFixed( 0 ) );
+		
+		total_gain_chf = total_holdings_eur * md["EUR-CHF"].fx - total_investment_chf;
+		$('#total_gain_chf').text( parseFloat( total_gain_chf ).toFixed( 0 ) );
+		
+		total_gain_pct = ((total_holdings_eur * md["EUR-CHF"].fx - total_investment_chf) / total_investment_chf) * 100;
+		$('#total_gain_pct').text( parseFloat( total_gain_pct ).toFixed( 3 ) );
+		
+		document.title = 'ML: ' + parseFloat( total_gain_pct ).toFixed( 2 ) + '% / ' + md["ETH-BTC"].px_last;
+	
+	}
+	
+	function initWebSocket() {
+		websocket = new WebSocket(wsUri);
+		websocket.onopen = function(evt) { onOpen(evt) };
+		websocket.onclose = function(evt) { onClose(evt) };
+		websocket.onmessage = function(evt) { onMessage(evt) };
+		websocket.onerror = function(evt) { onError(evt) };
+	}
+
+  function onOpen(evt) {
+    writeToConsole("WEB SOCKET - OPEN and CONNECTED");
+	var json = JSON.stringify(
+		{
+			"type": "subscribe",
+			"product_ids": ["BTC-EUR", "ETH-EUR", "ETH-BTC"],
+			"channels": [
+				//"level2",
+				//"heartbeat",
+				{ "name": "ticker", "product_ids": ["BTC-EUR", "ETH-EUR", "ETH-BTC"] }
+			]
+		}			
+	);
+	doSend(json); 	
+  }
+
+  function onClose(evt) {
+    writeToConsole("WEB SOCKET - DISCONNECTED");	
+	// try to re-connect 
+    initWebSocket();
+	reconnectCount++;
+	writeToConsole("WEB SOCKET - RECONNECTING: " + reconnectCount + " count"); //websocket.readyState;
+  }
+
+  function onMessage(evt) {		
+	//console.log(evt.data);	
+	var msgJSON = JSON.parse(evt.data);	
+	var pr_id = msgJSON.product_id;
+	var type = msgJSON.type;
+	
+	if (type === "ticker") {
+		if (!msgJSON.hasOwnProperty('time')) return;
+		recalculateAndUpdate(type, pr_id, evt.data);
+		writeToConsole(pr_id + ' / ' + msgJSON.price + ' / ' + msgJSON.last_size + ' / ' + msgJSON.side);
+	} else {
+		writeToConsole(evt.data);
+	}
+  }
+
+  function onError(evt) {
+    writeToConsole('<span style="color: red;">WEB SOCKET - ERROR:</span> ' + evt.data);
+  }
+
+	function doSend(message) {
+		writeToConsole("WEB SOCKET - SENT: " + message);
+		websocket.send(message);
+	}
+
+	function writeToConsole(message) {
+		$('#console').prepend($('<p/>', {style: 'margin: 0; padding: 0; font-size: 11px; word-wrap: break-word' }).append($('<span/>').text(getNow() + message)));
+	}
+
+	function availableProductsGet(pr_id, what) {
+		for (var i = 0; i < availableProducts.length; i++) {
+			if(availableProducts[i].id == pr_id) {
+				if (what == "dc") {
+					return (availableProducts[i].quote_increment.split('.')[1] || []).length;
+				}
+			}		
+		}
+	}
+	
+	function ProductsHTTPRequest() {
+		var http_req = new XMLHttpRequest();
+		http_req.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				availableProducts = JSON.parse(this.responseText);
+				writeToConsole(this.responseText);
+				
+				HTTPRequestGetStats("BTC-EUR");
+				HTTPRequestGetStats("ETH-EUR");
+				HTTPRequestGetStats("ETH-BTC");
+
+			}
+		};
+		var url ="https://api.gdax.com/products/";
+		http_req.open("GET", url, true);
+		http_req.send();	
+	}
+	
+	function HTTPRequestGetFX(fx_id) {
+		var http_req = new XMLHttpRequest();
+		http_req.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				recalculateAndUpdate("FX", fx_id, this.responseText);				
+			}
+		};
+		var url = "http://free.currencyconverterapi.com/api/v5/convert?q="+fx_id.replace("-", "_")+"&compact=y";
+		http_req.open("GET", url, true);
+		http_req.send();	
+	}		
+	
+	function HTTPRequestGetStats(pr_id) {
+		var http_req = new XMLHttpRequest();
+		http_req.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				recalculateAndUpdate("stats", pr_id, this.responseText);
+				writeToConsole("stats" + ' ' + pr_id + ' ' + this.responseText);				
+			}
+		};
+		var url = "https://api.gdax.com/products/"+pr_id+"/stats/";
+		http_req.open("GET", url, true);
+		http_req.send();	
+	} 
+
+	function getNow() {
+		var date = new Date();	
+		var month = date.getMonth() + 1;
+		var day = date.getDate();
+		var hour = date.getHours();
+		var min = date.getMinutes();
+		var sec = date.getSeconds();
+
+		month = (month < 10 ? "0" : "") + month;
+		day = (day < 10 ? "0" : "") + day;
+		hour = (hour < 10 ? "0" : "") + hour;
+		min = (min < 10 ? "0" : "") + min;
+		sec = (sec < 10 ? "0" : "") + sec;
+
+		var str = date.getFullYear() + "-" + month + "-" + day + " " +  hour + ":" + min + ":" + sec + ": ";
+		return str;
+	}	
+	
+	ProductsHTTPRequest();
+	
+	setInterval(function() {
+		HTTPRequestGetStats("BTC-EUR");
+		HTTPRequestGetStats("ETH-EUR");
+		HTTPRequestGetStats("ETH-BTC");		
+	}, 2 * 60 * 1000);		
+
+	HTTPRequestGetFX("EUR-CHF");
+	initWebSocket();
+	
+	setInterval(function() {
+		for (var i = 0; i < selectedProductIDs.length; i++) {
+			var pr_id = selectedProductIDs[i];
+			var sec = Math.floor((new Date().getTime() - new Date(md[pr_id].time).getTime()) / 1000);
+			$('#stat_time_'+pr_id).text( sec + ' sec ago');
+		}		
+	}, 1 * 1000);	
+
+</script>
+<br>
+<div class="row">
+	<div class="cell">
+		<table>
+			<tr>
+				<td>IN DATE</td>
+				<td>OUT DATE</td>
+				<td>UNITS</td>
+				<td>UNITS</td>
+				<td>ENTRY@</td>
+				<td>EXIT@</td>
+				<td>GL%</td>
+				<td>GL BTC</td>
+				<td>GL EUR</td>
+			</tr>
+			<tr>
+				<td>23-Apr-18</td>
+				<td>03-May-18</td>
+				<td>42.19</td>
+				<td></td>
+				<td></td>
+				<td>0.07954</td>
+				<td>8.62%</td>
+				<td>3.64</td>
+				<td>28,579</td>
+			</tr>
+			<tr>
+				<td>05-May-18</td>
+				<td></td>
+				<td>45.82</td>
+				<td>558.01</td>
+				<td>0.08212</td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+			</tr>				
+		</table>
+	</div>
+</div>
+<div class="row">	
+	<div class="cell" style="margin: 10px; ">
+		<table>
+			<tr>
+				<td></td>
+				<td>SLIPPAGE</td>
+				<td>FEE</td>
+				<td>FINAL</td>
+			</tr>
+			<tr>
+				<td>BUY</td>
+				<td>0.0819</td>
+				<td>=0.003*K6</td>
+				<td>=K6-L6</td>
+			</tr>
+			<tr>
+				<td>SELL</td>
+				<td>0.0819</td>
+				<td>=0.003*K7</td>
+				<td>=K7+L7</td>
+			</tr>			
+		</table>
+	</div>
+</div>
+
+<hr>
+
+<table>
+<tr>
+	<td style="text-align:left; padding-right:10px; vertical-align:top; ">
+		<a href="http://adventure-aviators.com/_/mlevy_bot/" target=\"_new\">mlevy_bot</a><br>
+		<a href="http://www.tradingview.com" target=\"_new\">tradingview</a> / dexRaptor / 03PFqpJJsuemHO4kmQzr<br>
+
+		<br><b>NEWS:</b><br>
+		<a href="https://www.coindesk.com/" target=\"_new\">coindesk.com</a><br>
+		<a href="https://www.ccn.com/" target=\"_new\">ccn.com</a><br>
+		<a href="https://news.bitcoin.com/" target=\"_new\">news.bitcoin.com</a><br>
+		<a href="https://www.tradingview.com/markets/cryptocurrencies/" target=\"_new\">tradingview.com/crypto</a><br>
+
+		<br><b>COINS WATCH:</b><br>
+		<a href="https://www.livecoinwatch.com/" target=\"_new\">livecoinwatch.com</a><br>
+		<a href="https://onchainfx.com/" target=\"_new\">onchainfx.com</a><br>
+		<a href="https://coinmarketcap.com/" target=\"_new\">coinmarketcap.com</a><br>
+		<a href="https://blockchain.info/unconfirmed-transactions" target=\"_new\">unconfirmed-transactions</a><br>
+
+		<br><b>EXCHANGES:</b><br>
+		<a href="http://gdax.com" target=\"_new\">gdax.com</a><br>
+		<a href="https://www.bitfinex.com" target=\"_new\">bitfinex.com</a> / dexRaptor / BF-4A-84-A3-36-A5<br>
+		<a href="https://bittrex.com" target=\"_new\">bittrex.com</a> / dex.raptor@outlook.com / gmjY4MTK9F7ImacBELqm<br>
+		<a href="https://www.kucoin.com" target=\"_new\">kucoin.com</a><br>
+		<a href="https://kyber.network/" target=\"_new\">kyber.network</a><br>
+		<a href="http://poloniex.com" target=\"_new\">poloniex.com</a> / michal.lewcz@gmail.com / bob123456<br>
+		<a href="https://www.kraken.com/" target=\"_new\">kraken.com</a> / dex.raptor@outlook.com / CXMFmrnlyPUCmhxUxspm-.;1<br>
+	</td>
+	<td style="text-align:left; padding-right:10px; vertical-align:top; ">	
+
+		<b>WALLETS:</b><br>
+		<a href="http://wallet.trezor.io/" target=\"_new\">wallet.trezor.io</a><br>
+		<a href="http://myetherwallet.com/" target=\"_new\">myetherwallet.com</a><br>
+		<a href="https://blockchain.info/address/33HRPPGDmCRkfmHw6UdMvu57cx3z2fPCPr" target=\"_new\">BTC: 33HRPPGDmCRkfmHw6UdMvu57cx3z2fPCPr</a><br>
+		<a href="https://blockchain.info/address/36qDVhh2i2QBC8vkUPVdSDvsosNJTnC22Y" target=\"_new\">BTC: 36qDVhh2i2QBC8vkUPVdSDvsosNJTnC22Y</a><br>
+		<a href="https://etherscan.io/address/0xA2CB9849D1f761b600ebB6A2b6fa639C0C18B27f" target=\"_new\">ETH: 0xA2CB9849D1f761b600ebB6A2b6fa639C0C18B27f</a><br>
+		
+		<br>
+		<a href="https://blockchain.info/address/3Qnu2vDJeYC5UV5sMXqrEh2e8k5dm4H1om" target=\"_new\">Robert BTC</a> 0.0309 BTC, 200EUR @6472.5<br>
+			
+		<hr>
+		<br><b>JOBS:</b><br>
+		<a href="https://cryptojobslist.com/" target=\"_new\">cryptojobslist.com</a><br>
+		<a href="https://crypto.jobs/" target=\"_new\">crypto.jobs</a><br>
+		<a href="https://angel.co/" target=\"_new\">angel.co</a><br>
+		<a href="https://www.peopleperhour.com/" target=\"_new\">peopleperhour.com</a><br>
+		<a href="https://www.indeed.ch/Stellen?q=blockchain&l=" target=\"_new\">indeed.ch</a><br>
+		<a href="https://www.ccn.com/major-cryptocurrency-exchange-bitfinex-weighs-move-to-switzerland/" target=\"_new\">bitfinex-weighs-move-to-switzerland</a><br>
+
+		<br><b>OTHERS:</b><br>
+		<a href="https://www.tutorialspoint.com/expressjs/expressjs_environment.htm" target=\"_new\">expressjs_environment</a><br>
+		<a href="https://developer.mozilla.org/en-US/docs/Learn/Server-side/Express_Nodejs" target=\"_new\">Express_Nodejs</a><br>
+		<a href="https://hackernoon.com/the-cryptocurrency-trading-bible-two-the-seven-deadly-sins-of-technical-analysis-cacd04f916b3" target=\"_new\">trading-bible</a><br>	
+	</td>	
+	<td>
+		<a href="stop-limit-orders.bmp" target=\"_new\">
+			<img src="http://adventure-aviators.com/_/mlevy_bot/stop-limit-orders.bmp" style="width: 350px; ">
+		</a>
+	</td>
+</tr>
+</table>
+
+<hr> 
+<pre>
+INVESTMENTS LEDGER:  
+---------------------
+2018.01.08	  3.580 	313.410 CHF -> CS to GDAX 0.2428204 BTC @ 12355 EUR
+2018.01.08	  7.000 	309.830     -> UBS to GDAX 0.45182365 BTC @ 12972 EUR
+2018.01.05	    800 	302.830     -> UBS to GDAX 
+2017.12.15	 50.000 	302.330     -> UBS to GDAX 2.811977BTC @15045 EUR
+2017.12.15	 50.000 	252.330     -> UBS to GDAX FEE 793 6.27032117 BTC @15101 EUR
+2017.12.13	 58.930 	202.330     -> CS to GDAX FEE 705
+2017.11.16	 24.878 	143.400     -> CS to GDAX 3.268496 BTC @6425 EUR
+2017.11.06 	    522 	118.522     -> Targo to GDAX 0.070039 BTC @6425 EUR
+2017.10.31 	  6.000 	118.000     -> 5087 EUR UBS to GDAX - 90 CHF TX FEE
+2017.10.18	  3.500		112.000     -> 3050 EUR Targo to CoinBase
+2017.10.17	  3.500		108.500     -> 2.990 EUR / 60 CHF FEE: USB to CoinBase
+2017.10.09	 10.000	  	105.000     -> ETH to BTC 9,548 CHF/  -452 CHF loss  -4.52%: 33.0759 UNITS BUY 309 USD SELL 295 USD: 0.06072 ETHBTC
+2017.10.09	-10.000		 95.000     -> ETHEREUM MOVED TO BTC GDAX
+2017.10.09 	  5.000 	105.000     -> LTC to BTC 3,321 CHF/-1,679 CHF loss -33.57%: 65.4489 UNITS BUY  78 USD SELL  52 USD: 0.01118 LTCBTC
+2017.10.09	 -5.000		100.000     -> LITECOIN MOVED TO BTC GDAX
+2017.09.27 	 12.500 	105.000     
+2017.09.25 	 12.500 	 92.500   
+2017.08.31	  5.000		 80.000     -> LITECOIN 
+2017.08.16	 10.000		 75.000 
+2017.08.16	 15.000		 65.000  
+2017.08.15	  4.000		 50.000 
+2017.08.10	  4.000 	 46.000 
+2017.08.07	    700 	 42.000
+2017.06.30	 10.000 	 41.300     -> ETHEREUM
+2017.06.15	 10.000 	 31.300
+2017.06.06	 10.000 	 21.300
+2017.02.23	 10.000 	 11.300
+2017.02.15	  1.000 	  1.300
+2016.11.24	    300 	    300
+---------------------
+</pre>
+<hr> 
+<pre>
+var crypto = require('crypto');
+var request = require('request');
+
+var apiKey = 'a..6';
+var apiSecret = 'a..w==';
+var apiPassphrase = 'j..0';
+
+var timestamp = Date.now() / 1000;
+var req = {
+    method: 'GET',
+    path: '/accounts', 
+	//path: '/orders',
+	//path: '/fills',
+	//path: '/payment-methods', //-> FORBIDDEN FOR THIS APIKEY
+    body: ''
+};
+
+var message = timestamp + req.method + req.path + req.body;
+var key = Buffer(apiSecret, 'base64');
+//var hmac = crypto.createHmac('sha256', key);
+//var signature = hmac.update(message).digest('base64');
+var signature = crypto.createHmac('sha256', key).update(message).digest('base64');
+
+var options = {
+    baseUrl: 'https://api.gdax.com/',
+    url: req.path,
+    method: req.method,
+    headers: {
+        'CB-ACCESS-SIGN':		signature,		
+        'CB-ACCESS-TIMESTAMP': 	timestamp,
+		'CB-ACCESS-KEY': 		apiKey,
+        'CB-ACCESS-PASSPHRASE': apiPassphrase,
+        'USER-AGENT': 			'my-app-client'        
+    }
+};
+
+request(options,function(err, response){
+    if (err) console.log(err);
+    console.log(response.body);
+});
+</pre>
+<hr> 
+</body>
+</html>
