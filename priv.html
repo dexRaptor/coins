@@ -430,7 +430,7 @@
 				recalculateAndUpdate("FX", fx_id, this.responseText);				
 			}
 		};
-		var url = "http://free.currencyconverterapi.com/api/v5/convert?q="+fx_id.replace("-", "_")+"&compact=y";
+		var url = "https://free.currencyconverterapi.com/api/v5/convert?q="+fx_id.replace("-", "_")+"&compact=y";
 		http_req.open("GET", url, true);
 		http_req.send();	
 	}		
